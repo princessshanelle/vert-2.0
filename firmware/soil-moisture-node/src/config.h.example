@@ -1,0 +1,47 @@
+// Copy to config.h and fill in for your network. config.h is gitignored
+// so device credentials never end up committed.
+//
+// DEVICE_ID and DEVICE_SECRET come from provisioning this device first --
+// see docs/TESTING.md, "Provision a device" -- which is a deliberate
+// admin-only step: whoever wires up a new sensor should already have
+// its identity in hand before it ever powers on, not invent one on the
+// spot from the greenhouse floor.
+#pragma once
+
+#define WIFI_SSID     "your-greenhouse-wifi"
+#define WIFI_PASSWORD "your-wifi-password"
+
+#define MQTT_HOST "192.168.1.10"   // VERT broker LAN IP
+#define MQTT_PORT 1883
+
+#define DEVICE_ID     "soil-01"                  // returned by /api/v1/devices/provision
+#define DEVICE_SECRET "paste-the-provisioned-secret-here"
+#define DEVICE_TYPE   "soil-moisture"
+#define ZONE          "zoneA"                    // must match a zone's `name` in Postgres
+
+// A capacitive soil moisture sensor (not the cheaper resistive kind --
+// it corrodes within weeks buried in wet soil) wired to an ADC-capable
+// pin. GPIO32 is one of the ESP32's ADC1 pins, which keeps it free of
+// the ADC2/Wi-Fi conflict some other analog pins have.
+//
+// IMPORTANT -- power this sensor from the ESP32's 3V3 pin, never 5V/VIN.
+// These modules' analog output scales with their supply voltage; on 5V
+// it can exceed the ADC's 3.3V input limit, which clips your readable
+// range down to almost nothing (dry and wet start looking nearly
+// identical) and can permanently damage the GPIO pin -- exactly what
+// happened building this firmware the first time, which is why the
+// default pin here is GPIO32 rather than GPIO34.
+#define SOIL_PIN 32
+
+// Every capacitive sensor reads a different raw ADC range depending on
+// the exact board and supply voltage, so there's no universal constant
+// here -- these two MUST be calibrated per physical sensor:
+//   1. Flash this firmware, open the serial monitor.
+//   2. With the probe completely dry (in air), note the printed raw
+//      value and set SOIL_RAW_DRY to it.
+//   3. With the probe fully submerged in a cup of water, note that raw
+//      value and set SOIL_RAW_WET to it.
+// Most capacitive sensors read a HIGHER raw value dry and LOWER wet --
+// that's fine, the mapping below handles either direction.
+#define SOIL_RAW_DRY 3000
+#define SOIL_RAW_WET 1200

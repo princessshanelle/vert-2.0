@@ -1,0 +1,67 @@
+// Copy to config.h and fill in for your network. config.h is gitignored
+// so device credentials never end up committed.
+//
+// DEVICE_ID and DEVICE_SECRET come from provisioning this device first --
+// see docs/TESTING.md, "Provision a device". Adding another pH probe
+// (a second reservoir, a mixing tank) is the same as adding any other
+// VERT sensor: provision a new id (ph-02, ph-03, ...), give that board
+// its own copy of this file, flash. Nothing else changes.
+#pragma once
+
+#define WIFI_SSID     "your-greenhouse-wifi"
+#define WIFI_PASSWORD "your-wifi-password"
+
+#define MQTT_HOST "192.168.1.10"   // VERT broker LAN IP
+#define MQTT_PORT 1883             // RabbitMQ's MQTT listener -- not the gateway's 8080
+
+#define DEVICE_ID     "ph-01"                    // returned by /api/v1/devices/provision
+#define DEVICE_SECRET "paste-the-provisioned-secret-here"
+#define DEVICE_TYPE   "ph"                       // the dashboard already knows this type
+#define ZONE          "zoneA"                    // must match a zone's `name` in Postgres
+
+// ---- Wiring: PH-4502C module (pins To, Do, Po, G, G, V+) ---------------
+//
+//   V+  -> ESP32 VIN / 5V      The module's op-amp needs 5V; it misreads on 3V3.
+//   G   -> ESP32 GND           (either G pin; they're the same ground)
+//   Po  -> voltage divider -> PH_PIN   (see below -- never wire Po straight in)
+//   Do  -> not connected       A threshold alarm set by the module's second
+//                              trimmer -- VERT's automation rules do this job.
+//   To  -> not connected       A thermistor on the *module board*: it reads the
+//                              air around the electronics, not the water.
+//
+// The divider: Po can swing up to ~4V+ on 5V supply, past the ESP32 ADC's
+// 3.3V limit (the soil node lost GPIO34 to exactly this). Two resistors:
+//
+//   Po ---[ 10k ]---+--- PH_PIN
+//                   |
+//                 [ 20k ]
+//                   |
+//                  GND
+//
+// Scales Po by 2/3, so even a full 5V becomes 3.33V. Any 1:2 pair works
+// (e.g. 4.7k + 10k is close enough) -- calibration absorbs the exact ratio.
+//
+// GPIO33 is an ADC1 pin, which keeps it free of the ADC2/Wi-Fi conflict.
+#define PH_PIN 33
+
+// ---- Calibration (do this before trusting a single reading) ------------
+//
+// Every probe + module + divider combination is different, so this is a
+// two-point calibration with buffer solutions (powder sachets are cheap):
+//   1. Flash, open the serial monitor (115200). Every sample prints its mV.
+//   2. Rinse the probe in clean water, put it in the pH 6.86 / 7.00 buffer.
+//      Wait ~1 minute for the mV to settle; set PH_CAL_MV_NEUTRAL to it.
+//   3. Rinse, put it in the pH 4.00 / 4.01 buffer, wait, set PH_CAL_MV_ACID.
+//   4. Set the two *_BUFFER values to what's printed on your sachets.
+//   5. Re-flash. Check it reads the 6.86 buffer as ~6.86.
+// Re-calibrate monthly -- pH electrodes drift as they age.
+//
+// The defaults below are typical for a PH-4502C behind a 2/3 divider,
+// good enough to see plausible numbers on first boot, not to grow by.
+#define PH_BUFFER_NEUTRAL 6.86
+#define PH_BUFFER_ACID    4.01
+#define PH_CAL_MV_NEUTRAL 1690
+#define PH_CAL_MV_ACID    2030
+
+// pH moves slowly in a reservoir, and the probe needs time to settle.
+#define READ_INTERVAL_MS 10000

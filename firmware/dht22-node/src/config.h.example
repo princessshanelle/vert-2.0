@@ -1,0 +1,22 @@
+// Copy to config.h and fill in for your network. config.h is gitignored
+// so device credentials never end up committed.
+//
+// DEVICE_ID and DEVICE_SECRET come from provisioning this device first --
+// see docs/TESTING.md, "Provision a device" -- which is a deliberate
+// admin-only step: whoever wires up a new sensor should already have
+// its identity in hand before it ever powers on, not invent one on the
+// spot from the greenhouse floor.
+#pragma once
+
+#define WIFI_SSID     "your-greenhouse-wifi"
+#define WIFI_PASSWORD "your-wifi-password"
+
+#define MQTT_HOST "192.168.1.10"   // VERT broker LAN IP
+#define MQTT_PORT 1883
+
+#define DEVICE_ID     "dht22-01"                 // returned by /api/v1/devices/provision
+#define DEVICE_SECRET "paste-the-provisioned-secret-here"
+#define DEVICE_TYPE   "temp-humidity"
+#define ZONE          "zoneA"                    // must match a zone's `name` in Postgres
+
+#define DHT_PIN  4

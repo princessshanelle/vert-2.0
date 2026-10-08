@@ -1,0 +1,13 @@
+config.yaml
+.venv/
+models/
+samples/
+training/.venv/
+training/PlantDoc/
+training/IP102/
+training/sources/
+training/unlabelled/
+training/datasets/
+training/runs/
+training/exported/
+training/*.pt

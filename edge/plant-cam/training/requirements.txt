@@ -1,0 +1,7 @@
+# Training machine (Linux / WSL2 / Colab with a GPU ideally), not the Pi.
+# Ultralytics installs PyTorch; TensorFlow + onnx2tf for the TFLite export
+# are pulled in automatically the first time export.py runs.
+ultralytics>=8.3
+pyyaml
+pillow
+minio

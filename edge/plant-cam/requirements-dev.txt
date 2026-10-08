@@ -1,0 +1,9 @@
+# For running plant-cam on a laptop with camera.source: opencv or folder.
+# ai-edge-litert has Linux/macOS wheels only; on Windows, either install
+# tensorflow to test a model, or run without one (greenness heuristic).
+numpy
+opencv-python
+paho-mqtt>=2.0,<3
+pyyaml
+requests
+ai-edge-litert>=1.2; sys_platform != "win32"

@@ -1,0 +1,58 @@
+# Copy to /etc/plant-cam/config.yaml on the Pi (or ./config.yaml on a dev
+# laptop) and fill in the first three sections. Everything below them has
+# sensible defaults and can be deleted.
+
+device:
+  id: plantcam-01              # exactly what you provisioned -- no dots or slashes
+  secret: paste-the-provisioned-secret-here   # or set VERT_DEVICE_SECRET instead
+  type: ai-camera
+  zone: zoneA                  # must match the zone's name in the dashboard
+
+broker:
+  host: 192.168.1.25           # the machine running docker compose
+  port: 1883
+
+gateway:
+  url: http://192.168.1.25:8080
+
+camera:
+  source: picamera2            # picamera2 (Pi) | opencv (USB webcam) | folder (still images)
+  width: 1280
+  height: 720
+  fps: 10
+  hflip: false
+  vflip: false
+  # opencv_index: 0
+  # folder: ./samples
+
+model:
+  dir: /opt/plant-cam/models/current   # symlink to models/<version>/; missing = greenness heuristic
+  score_threshold: 0.35
+  iou_threshold: 0.45
+  num_threads: 3
+
+analysis:
+  interval_s: 30
+  window: 5                    # readings are smoothed over this many analyses
+
+evidence:
+  interval_s: 900              # routine annotated photo to the dashboard gallery
+  on_decline: true             # plus one immediately whenever things get worse
+
+stream:
+  port: 81                     # the dashboard expects :81/stream
+  max_fps: 10
+  jpeg_quality: 75
+  overlay: true
+  always_on: false
+  idle_timeout_s: 300
+
+dataset:
+  enabled: true                # raw photos kept locally for labelling -> training
+  dir: /var/lib/plant-cam/dataset
+  interval_s: 600
+  max_files: 5000
+
+spool:
+  path: /var/lib/plant-cam/spool.jsonl
+  max_entries: 5000

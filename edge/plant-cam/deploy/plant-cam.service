@@ -1,0 +1,36 @@
+[Unit]
+Description=VERT plant-cam (on-device plant-health detection + live view)
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=notify
+NotifyAccess=main
+User=plantcam
+Group=plantcam
+SupplementaryGroups=video
+WorkingDirectory=/opt/plant-cam/app
+ExecStart=/opt/plant-cam/venv/bin/python -m plant_cam --config /etc/plant-cam/config.yaml
+Environment=PYTHONUNBUFFERED=1
+
+# Restarted on any crash, and by the watchdog if the main loop ever hangs
+# (the app pings it every second while healthy).
+Restart=always
+RestartSec=5
+WatchdogSec=120
+TimeoutStartSec=90
+
+# Port 81 is below 1024; grant just that one privilege instead of root.
+AmbientCapabilities=CAP_NET_BIND_SERVICE
+CapabilityBoundingSet=CAP_NET_BIND_SERVICE
+
+# Creates /var/lib/plant-cam owned by plantcam (dataset + offline spool).
+StateDirectory=plant-cam
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+PrivateTmp=true
+ReadWritePaths=/var/lib/plant-cam
+
+[Install]
+WantedBy=multi-user.target

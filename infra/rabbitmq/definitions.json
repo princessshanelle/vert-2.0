@@ -1,0 +1,14 @@
+{
+  "_comment": "Internal (Mnesia-backed) accounts for VERT's own backend services. Devices are NOT listed here — they authenticate through the HTTP auth backend (see rabbitmq.conf + services/gateway/internal/api/rabbitmq_auth.go) so a new sensor never needs a RabbitMQ definitions change to come online. DEV-ONLY PASSWORDS: change every password below before this ever leaves a trusted LAN.",
+  "vhosts": [{ "name": "/" }],
+  "permissions": [
+    { "user": "vert_gateway", "vhost": "/", "configure": ".*", "write": ".*", "read": ".*" },
+    { "user": "vert_inference", "vhost": "/", "configure": "^q\\.ai\\..*$", "write": "^(amq\\.topic|q\\.ai\\..*)$", "read": "^(amq\\.topic|q\\.ai\\..*)$" },
+    { "user": "vert_automation", "vhost": "/", "configure": "^q\\.automation\\..*$", "write": "^(amq\\.topic|q\\.automation\\..*)$", "read": "^(amq\\.topic|q\\.automation\\..*)$" }
+  ],
+  "users": [
+    { "name": "vert_gateway", "password": "vert_gateway_dev_password", "tags": "administrator" },
+    { "name": "vert_inference", "password": "vert_inference_dev_password", "tags": "" },
+    { "name": "vert_automation", "password": "vert_automation_dev_password", "tags": "" }
+  ]
+}

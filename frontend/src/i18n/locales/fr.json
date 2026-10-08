@@ -1,0 +1,172 @@
+{
+  "app": {
+    "name": "VERT"
+  },
+  "common": {
+    "loading": "Un instant...",
+    "cancel": "Annuler",
+    "delete": "Supprimer"
+  },
+  "auth": {
+    "login": "Connexion",
+    "register": "Créer un compte",
+    "email": "E-mail",
+    "password": "Mot de passe",
+    "display_name": "Votre nom",
+    "login_cta": "Se connecter",
+    "register_cta": "Créer un compte",
+    "switch_to_register": "Besoin d'un compte ? Inscrivez-vous",
+    "switch_to_login": "Déjà un compte ? Connectez-vous",
+    "invalid_credentials": "E-mail ou mot de passe invalide"
+  },
+  "dashboard": {
+    "title": "Votre serre",
+    "subtitle": "Tout ce qui est connecté, en un coup d'œil.",
+    "no_devices": "Rien ici pour l'instant. Dès qu'un capteur ou une caméra est provisionné et allumé, il apparaîtra tout seul.",
+    "add_first_device": "Provisionner votre premier appareil",
+    "status_online": "En ligne",
+    "status_offline": "Hors ligne",
+    "last_seen": "Vu pour la dernière fois",
+    "unassigned_zone": "Pas encore de zone",
+    "toggle_live": "Jeter un œil en direct",
+    "tap_eye": "Touchez l'œil pour un aperçu en direct",
+    "live_pending": "En attente du flux en direct de cette caméra -- elle ne le prend peut-être pas encore en charge."
+  },
+  "device_types": {
+    "temp-humidity": "Température et humidité",
+    "camera": "Caméra",
+    "ai-camera": "Caméra IA des plantes",
+    "ph": "Capteur de pH",
+    "soil-moisture": "Humidité du sol",
+    "pump": "Pompe à eau",
+    "window": "Moteur de fenêtre"
+  },
+  "device_detail": {
+    "not_found": "Nous n'avons pas trouvé cet appareil. Il a peut-être été retiré.",
+    "status": "État",
+    "zone": "Zone",
+    "plant_health": "Santé de la plante",
+    "health_score": "Indice de santé",
+    "confidence": "Confiance",
+    "latest_reading": "Dernière mesure",
+    "photos": "Photos",
+    "no_photos": "Pas encore de photo. Dès que cette caméra en prendra une, elle apparaîtra ici.",
+    "photo_alt": "Photo de la plante",
+    "history": "Historique",
+    "export_csv": "Exporter en CSV",
+    "exporting": "Exportation...",
+    "live_view": "Vue en direct",
+    "go_live": "Passer en direct",
+    "stop_live": "Arrêter le direct",
+    "live_view_hint": "Passez en direct pour un aperçu en temps réel, ou laissez tel quel et VERT continuera de prendre ses photos périodiques habituelles."
+  },
+  "readings": {
+    "temp_c": "Température (°C)",
+    "soil_moisture_pct": "Humidité du sol (%)",
+    "humidity_pct": "Humidité (%)",
+    "ph": "pH",
+    "health_score": "Indice de santé",
+    "confidence": "Confiance",
+    "green_fraction": "Couverture verte"
+  },
+  "zones": {
+    "title": "Zones",
+    "subtitle": "Regroupez vos appareils comme votre serre est vraiment organisée.",
+    "name_placeholder": "ex. Zone A, Pépinière, Serre 2",
+    "create": "Ajouter une zone",
+    "create_failed": "Impossible de créer cette zone -- réessayez dans un instant.",
+    "no_zones": "Aucune zone pour l'instant -- ajoutez-en une ci-dessous pour commencer à regrouper vos appareils.",
+    "device_count": "{count} appareil(s) ici",
+    "assign_hint": "Déplacez un appareil vers une zone depuis sa propre page"
+  },
+  "provision": {
+    "title": "Ajouter un appareil",
+    "subtitle": "Donnez à un nouveau capteur ou une nouvelle caméra sa propre identité avant même qu'il ne soit allumé.",
+    "device_id_label": "Identifiant de l'appareil",
+    "device_id_hint": "Un nom court et unique que vous inscrirez aussi dans le micrologiciel de l'appareil.",
+    "device_type_label": "Type d'appareil",
+    "submit": "Provisionner l'appareil",
+    "failed": "Impossible de provisionner cet appareil -- vérifiez que l'identifiant n'est pas déjà utilisé.",
+    "secret_ready": "{id} est prêt",
+    "secret_warning": "Ce secret n'est affiché qu'une seule fois, maintenant. Copiez-le dans le config.h de l'appareil -- il n'y a aucun moyen de le revoir, seulement d'en émettre un nouveau.",
+    "copy": "Copier",
+    "copied": "Copié !",
+    "next_step": "Collez cet identifiant et ce secret dans firmware/*/src/config.h, puis flashez {id}.",
+    "provision_another": "Ajouter un autre appareil"
+  },
+  "rules": {
+    "title": "Automatisation",
+    "subtitle": "Laissez VERT surveiller pour vous, pour que vous n'ayez pas à vérifier toutes les heures.",
+    "new_rule": "Nouvelle règle",
+    "name_label": "Nom de la règle",
+    "name_placeholder": "ex. Zone A trop chaude",
+    "scope_label": "Surveiller",
+    "scope_zone": "Toute une zone",
+    "scope_device": "Un appareil",
+    "pick_one": "Choisissez...",
+    "watched_device": "Appareil",
+    "when_label": "Quand",
+    "metric_label": "Mesure",
+    "op_label": "Comparer",
+    "value_label": "Valeur",
+    "for_minutes_label": "Pendant combien de temps (minutes)",
+    "then_label": "Alors",
+    "action_device_label": "Dire à cet appareil",
+    "action_command_label": "De faire ceci",
+    "save": "Enregistrer la règle",
+    "create_failed": "Impossible d'enregistrer cette règle -- vérifiez que tous les champs sont remplis.",
+    "no_rules": "Aucune règle pour l'instant. Ajoutez-en une et VERT commencera à surveiller immédiatement.",
+    "summary": "Surveille {scope} : quand {metric} {op} {value} pendant {minutes} min, dit à {target} de {command}.",
+    "enable": "Activer",
+    "disable": "Suspendre",
+    "confirm_delete": "Supprimer la règle « {name} » ? Cette action est irréversible."
+  },
+  "alerts": {
+    "title": "Alertes",
+    "subtitle": "Ce que VERT a remarqué par lui-même.",
+    "acknowledge": "Compris",
+    "seen": "Vu",
+    "all_quiet": "Tout est calme -- rien ne demande votre attention pour l'instant."
+  },
+  "reminders": {
+    "title": "Rappels",
+    "subtitle": "Les choses que vous seul(e) penseriez à faire.",
+    "title_placeholder": "ex. Recommander des bandelettes de pH",
+    "description_placeholder": "Détails (facultatif)",
+    "recurrence_none": "Une seule fois",
+    "recurrence_daily": "Se répète chaque jour",
+    "recurrence_weekly": "Se répète chaque semaine",
+    "recurrence_biweekly": "Se répète toutes les deux semaines",
+    "add": "Ajouter un rappel",
+    "create_failed": "Impossible d'enregistrer ce rappel -- réessayez dans un instant.",
+    "all_clear": "Rien à retenir pour l'instant -- profitez du calme.",
+    "due": "Échéance",
+    "done_count": "{count} terminé(s)"
+  },
+  "settings": {
+    "title": "Paramètres",
+    "account": "Votre compte",
+    "name": "Nom",
+    "email": "E-mail",
+    "role": "Rôle",
+    "language": "Langue",
+    "language_hint": "Ceci change les écrans de VERT eux-mêmes. Le micrologiciel et les alertes des appareils restent inchangés.",
+    "about": "À propos de VERT",
+    "about_text": "VERT -- Versatile Eco-farming Robotic Technology -- veille sur votre serre pour que vous passiez moins de temps à vous inquiéter et plus de temps à cultiver."
+  },
+  "roles": {
+    "admin": "Administrateur",
+    "operator": "Opérateur",
+    "viewer": "Observateur"
+  },
+  "nav": {
+    "dashboard": "Tableau de bord",
+    "zones": "Zones",
+    "rules": "Automatisation",
+    "alerts": "Alertes",
+    "reminders": "Rappels",
+    "provision": "Ajouter un appareil",
+    "settings": "Paramètres",
+    "logout": "Déconnexion"
+  }
+}

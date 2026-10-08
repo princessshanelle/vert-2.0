@@ -1,0 +1,29 @@
+// Copy to config.h and fill in for your network. config.h is gitignored.
+//
+// DEVICE_ID and DEVICE_SECRET come from provisioning this device first --
+// see docs/TESTING.md, "Provision a device". The same secret is used for
+// both the MQTT connection and the HTTP frame upload below: one identity,
+// one credential, checked by the gateway either way.
+#pragma once
+
+#define WIFI_SSID     "your-greenhouse-wifi"
+#define WIFI_PASSWORD "your-wifi-password"
+
+#define MQTT_HOST "192.168.1.10"
+#define MQTT_PORT 1883
+
+// HTTP upload endpoint for the actual JPEG bytes. Images are too large for
+// the message broker, so only a reference/metadata event goes over MQTT;
+// the binary goes over plain HTTP to the gateway, which stores it in
+// MinIO/S3 and records it so the dashboard can show it back. The upload
+// path is built from DEVICE_ID at runtime (see main.cpp) so it can never
+// drift out of sync with the id below.
+#define UPLOAD_HOST "192.168.1.10"
+#define UPLOAD_PORT 8080
+
+#define DEVICE_ID     "cam01"                    // returned by /api/v1/devices/provision
+#define DEVICE_SECRET "paste-the-provisioned-secret-here"
+#define DEVICE_TYPE   "camera"
+#define ZONE          "zoneA"                    // must match a zone's `name` in Postgres
+
+#define CAPTURE_INTERVAL_MS 60000

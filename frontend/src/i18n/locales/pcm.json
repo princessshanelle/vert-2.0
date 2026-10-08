@@ -1,0 +1,172 @@
+{
+  "app": {
+    "name": "VERT"
+  },
+  "common": {
+    "loading": "Wait small...",
+    "cancel": "Cancel",
+    "delete": "Delete"
+  },
+  "auth": {
+    "login": "Log in",
+    "register": "Open account",
+    "email": "Email",
+    "password": "Password",
+    "display_name": "Your name",
+    "login_cta": "Log in",
+    "register_cta": "Open account",
+    "switch_to_register": "You no get account? Sign up",
+    "switch_to_login": "You don get account? Log in",
+    "invalid_credentials": "Email or password no correct"
+  },
+  "dashboard": {
+    "title": "Your greenhouse",
+    "subtitle": "Everything wey connect, for one place.",
+    "no_devices": "Nothing dey here yet. Once you provision sensor or camera and switch am on, e go show by e self.",
+    "add_first_device": "Provision your first device",
+    "status_online": "E dey online",
+    "status_offline": "E don off",
+    "last_seen": "Last time wey e show",
+    "unassigned_zone": "E no dey any zone yet",
+    "toggle_live": "Peep di live view",
+    "tap_eye": "Touch di eye make you see am live",
+    "live_pending": "We dey wait for dis camera live feed -- e fit be say e no support am yet."
+  },
+  "device_types": {
+    "temp-humidity": "Temperature and humidity",
+    "camera": "Camera",
+    "ai-camera": "AI camera wey dey watch plant",
+    "ph": "pH sensor",
+    "soil-moisture": "Soil moisture",
+    "pump": "Water pump",
+    "window": "Window motor"
+  },
+  "device_detail": {
+    "not_found": "We no fit find dis device. E fit be say dem don remove am.",
+    "status": "Status",
+    "zone": "Zone",
+    "plant_health": "How di plant dey",
+    "health_score": "Health score",
+    "confidence": "How sure we sure",
+    "latest_reading": "Latest reading",
+    "photos": "Photos",
+    "no_photos": "No photo yet. Once dis camera snap one, e go show here.",
+    "photo_alt": "Photo of di plant",
+    "history": "History",
+    "export_csv": "Download CSV",
+    "exporting": "E dey export...",
+    "live_view": "Live view",
+    "go_live": "Go live",
+    "stop_live": "Stop di live view",
+    "live_view_hint": "Go live make you see am now now, or leave am and VERT go still dey take e usual photo every small time."
+  },
+  "readings": {
+    "temp_c": "Temperature (°C)",
+    "soil_moisture_pct": "Soil moisture (%)",
+    "humidity_pct": "Humidity (%)",
+    "ph": "pH",
+    "health_score": "Health score",
+    "confidence": "How sure we sure",
+    "green_fraction": "Green cover"
+  },
+  "zones": {
+    "title": "Zones",
+    "subtitle": "Group your devices di way your greenhouse really be.",
+    "name_placeholder": "e.g. Zone A, Nursery, Greenhouse 2",
+    "create": "Add zone",
+    "create_failed": "We no fit create dat zone -- try again small time.",
+    "no_zones": "No zone yet -- add one for below make you start to group your devices.",
+    "device_count": "{count} device(s) dey here",
+    "assign_hint": "Move device enter zone for e own page"
+  },
+  "provision": {
+    "title": "Add device",
+    "subtitle": "Give new sensor or camera e own identity before e even switch on.",
+    "device_id_label": "Device ID",
+    "device_id_hint": "Short, unique name wey you go put for di device firmware too.",
+    "device_type_label": "Device type",
+    "submit": "Provision device",
+    "failed": "We no fit provision dat device -- check say di ID no dey used already.",
+    "secret_ready": "{id} don ready",
+    "secret_warning": "Dis secret dey show one time, now now. Copy am put for di device config.h -- no way to see am again, na only to issue new one.",
+    "copy": "Copy",
+    "copied": "E don copy!",
+    "next_step": "Paste dis device ID and secret enter firmware/*/src/config.h, then flash {id}.",
+    "provision_another": "Add another device"
+  },
+  "rules": {
+    "title": "Automation",
+    "subtitle": "Make VERT dey watch for you, so you no go need check am every hour.",
+    "new_rule": "New rule",
+    "name_label": "Rule name",
+    "name_placeholder": "e.g. Zone A too hot",
+    "scope_label": "Watch",
+    "scope_zone": "Whole zone",
+    "scope_device": "One device",
+    "pick_one": "Pick one...",
+    "watched_device": "Device",
+    "when_label": "When",
+    "metric_label": "Reading",
+    "op_label": "Compare",
+    "value_label": "Value",
+    "for_minutes_label": "For how long (minutes)",
+    "then_label": "Then",
+    "action_device_label": "Tell dis device",
+    "action_command_label": "To do dis",
+    "save": "Save rule",
+    "create_failed": "We no fit save dat rule -- make sure say you fill every field.",
+    "no_rules": "No rule yet. Add one and VERT go start to watch immediately.",
+    "summary": "E dey watch {scope}: if {metric} {op} {value} reach {minutes} min, e go tell {target} make e {command}.",
+    "enable": "Switch am on",
+    "disable": "Pause am",
+    "confirm_delete": "Delete di rule \"{name}\"? You no fit undo dis one."
+  },
+  "alerts": {
+    "title": "Alerts",
+    "subtitle": "Wetin VERT don notice by e own self.",
+    "acknowledge": "I don see am",
+    "seen": "You don see am",
+    "all_quiet": "Everywhere quiet -- nothing need your attention now now."
+  },
+  "reminders": {
+    "title": "Reminders",
+    "subtitle": "Di things wey na only you go remember to do.",
+    "title_placeholder": "e.g. Order pH strips again",
+    "description_placeholder": "Any detail (optional)",
+    "recurrence_none": "One time",
+    "recurrence_daily": "E dey repeat every day",
+    "recurrence_weekly": "E dey repeat every week",
+    "recurrence_biweekly": "E dey repeat every two weeks",
+    "add": "Add reminder",
+    "create_failed": "We no fit save dat reminder -- try again small time.",
+    "all_clear": "Nothing to remember now -- enjoy di quiet.",
+    "due": "E go due",
+    "done_count": "{count} don finish"
+  },
+  "settings": {
+    "title": "Settings",
+    "account": "Your account",
+    "name": "Name",
+    "email": "Email",
+    "role": "Role",
+    "language": "Language",
+    "language_hint": "Dis one dey change VERT own screens. Firmware and alerts wey come from devices go still remain as e be.",
+    "about": "About VERT",
+    "about_text": "VERT -- Versatile Eco-farming Robotic Technology -- dey watch over your greenhouse so you go worry less and grow more."
+  },
+  "roles": {
+    "admin": "Admin",
+    "operator": "Operator",
+    "viewer": "Viewer"
+  },
+  "nav": {
+    "dashboard": "Dashboard",
+    "zones": "Zones",
+    "rules": "Automation",
+    "alerts": "Alerts",
+    "reminders": "Reminders",
+    "provision": "Add device",
+    "settings": "Settings",
+    "logout": "Comot"
+  }
+}

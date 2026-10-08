@@ -1,0 +1,76 @@
+ip: ""
+remote:
+  host: "http://localhost:8000/api/v1" # "https://api.aquareign-smart.com"
+  value_endpoint: "/iot/values"
+  submit_config: "/iot"
+broker:
+  host: "192.168.1.173"
+  port: 1883
+  keepalive: 60
+&sensors sensors:
+  dht01:
+    id: "dht01"
+    ip: "192.168.1.156"
+    type: "temp-01"
+    topics:
+      sub:
+        t1: "temp-01"
+      pub:
+        t1: ""
+        t2: ""
+  dht02:
+    id: "dht02"
+    ip: "192.168.1.157"
+    type: "temp-02"
+    topics:
+      sub:
+        t2: "temp-02"
+      pub:
+        t1: ""
+        t2: ""
+  dht05:
+    id: "dht05"
+    ip: "192.168.1.157"
+    type: "temp-05"
+    topics:
+      sub:
+        t1: "temp-05"
+        t2: "temp-06"
+      pub:
+        t1: ""
+        t2: ""
+  dht03:
+    id: "dht03"
+    ip: "192.168.1.158"
+    type: "temp-03"
+    topics:
+      sub:
+        t2: "temp-03"
+      pub:
+        t1: ""
+        t2: ""
+  dht04:
+    id: "dht04"
+    ip: "192.168.1.157"
+    type: "temp-04"
+    topics:
+      sub:
+        t2: "temp-04"
+        t5: "temp-06"
+      pub:
+        t1: ""
+        t2: "h"
+meta:
+  sensors_key: *sensors
+  sensor_id_key: "id"
+  topic_key: "topics"
+  sub_key: "sub"
+  pub_key: "pub"
+  system_evt_key: "system"
+  system_init_evt: &init "reinit"
+  system_offline_evt: &offline "offline"
+
+system:
+  sub:
+    - *init
+    - *offline

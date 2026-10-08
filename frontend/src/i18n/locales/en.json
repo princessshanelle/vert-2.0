@@ -1,0 +1,172 @@
+{
+  "app": {
+    "name": "VERT"
+  },
+  "common": {
+    "loading": "Just a moment...",
+    "cancel": "Cancel",
+    "delete": "Delete"
+  },
+  "auth": {
+    "login": "Log in",
+    "register": "Create account",
+    "email": "Email",
+    "password": "Password",
+    "display_name": "Your name",
+    "login_cta": "Log in",
+    "register_cta": "Create account",
+    "switch_to_register": "Need an account? Sign up",
+    "switch_to_login": "Already have an account? Log in",
+    "invalid_credentials": "Invalid email or password"
+  },
+  "dashboard": {
+    "title": "Your greenhouse",
+    "subtitle": "Everything connected, at a glance.",
+    "no_devices": "Nothing here yet. Once a sensor or camera is provisioned and powered on, it will show up on its own.",
+    "add_first_device": "Provision your first device",
+    "status_online": "Online",
+    "status_offline": "Offline",
+    "last_seen": "Last seen",
+    "unassigned_zone": "Not yet in a zone",
+    "toggle_live": "Peek at the live view",
+    "tap_eye": "Tap the eye for a live look",
+    "live_pending": "Waiting on this camera's live feed -- it may not support one yet."
+  },
+  "device_types": {
+    "temp-humidity": "Temperature & humidity",
+    "camera": "Camera",
+    "ai-camera": "AI plant camera",
+    "ph": "pH sensor",
+    "soil-moisture": "Soil moisture",
+    "pump": "Water pump",
+    "window": "Window motor"
+  },
+  "device_detail": {
+    "not_found": "We couldn't find that device. It may have been removed.",
+    "status": "Status",
+    "zone": "Zone",
+    "plant_health": "Plant health",
+    "health_score": "Health score",
+    "confidence": "Confidence",
+    "latest_reading": "Latest reading",
+    "photos": "Photos",
+    "no_photos": "No photos yet. Once this camera takes one, it'll show up here.",
+    "photo_alt": "Photo of the plant",
+    "history": "History",
+    "export_csv": "Export CSV",
+    "exporting": "Exporting...",
+    "live_view": "Live view",
+    "go_live": "Go live",
+    "stop_live": "Stop live view",
+    "live_view_hint": "Go live for a real-time look, or leave it be and VERT will keep taking its usual periodic photos."
+  },
+  "readings": {
+    "temp_c": "Temperature (°C)",
+    "humidity_pct": "Humidity (%)",
+    "soil_moisture_pct": "Soil moisture (%)",
+    "ph": "pH",
+    "health_score": "Health score",
+    "confidence": "Confidence",
+    "green_fraction": "Green cover"
+  },
+  "zones": {
+    "title": "Zones",
+    "subtitle": "Group your devices the way your greenhouse is actually laid out.",
+    "name_placeholder": "e.g. Zone A, Nursery, Greenhouse 2",
+    "create": "Add zone",
+    "create_failed": "Couldn't create that zone -- try again in a moment.",
+    "no_zones": "No zones yet -- add one below to start grouping your devices.",
+    "device_count": "{count} device(s) here",
+    "assign_hint": "Move a device into a zone from its own page"
+  },
+  "provision": {
+    "title": "Add a device",
+    "subtitle": "Give a new sensor or camera its own identity before it ever powers on.",
+    "device_id_label": "Device ID",
+    "device_id_hint": "A short, unique name you'll also flash into the device's firmware.",
+    "device_type_label": "Device type",
+    "submit": "Provision device",
+    "failed": "Couldn't provision that device -- check the ID isn't already used.",
+    "secret_ready": "{id} is ready",
+    "secret_warning": "This secret is shown once, right now. Copy it into the device's config.h -- there's no way to see it again, only to issue a new one.",
+    "copy": "Copy",
+    "copied": "Copied!",
+    "next_step": "Paste this device ID and secret into firmware/*/src/config.h, then flash {id}.",
+    "provision_another": "Add another device"
+  },
+  "rules": {
+    "title": "Automation",
+    "subtitle": "Let VERT watch for you, so you don't have to check every hour.",
+    "new_rule": "New rule",
+    "name_label": "Rule name",
+    "name_placeholder": "e.g. Zone A too hot",
+    "scope_label": "Watch",
+    "scope_zone": "A whole zone",
+    "scope_device": "One device",
+    "pick_one": "Pick one...",
+    "watched_device": "Device",
+    "when_label": "When",
+    "metric_label": "Reading",
+    "op_label": "Compare",
+    "value_label": "Value",
+    "for_minutes_label": "For how long (minutes)",
+    "then_label": "Then",
+    "action_device_label": "Tell this device",
+    "action_command_label": "To do this",
+    "save": "Save rule",
+    "create_failed": "Couldn't save that rule -- make sure every field is filled in.",
+    "no_rules": "No rules yet. Add one and VERT will start watching right away.",
+    "summary": "Watching {scope}: when {metric} {op} {value} for {minutes} min, tell {target} to {command}.",
+    "enable": "Enable",
+    "disable": "Pause",
+    "confirm_delete": "Delete the rule \"{name}\"? This can't be undone."
+  },
+  "alerts": {
+    "title": "Alerts",
+    "subtitle": "What VERT has noticed on its own.",
+    "acknowledge": "Got it",
+    "seen": "Seen",
+    "all_quiet": "All quiet -- nothing needs your attention right now."
+  },
+  "reminders": {
+    "title": "Reminders",
+    "subtitle": "The things only you would remember to do.",
+    "title_placeholder": "e.g. Reorder pH strips",
+    "description_placeholder": "Any details (optional)",
+    "recurrence_none": "One time",
+    "recurrence_daily": "Repeats daily",
+    "recurrence_weekly": "Repeats weekly",
+    "recurrence_biweekly": "Repeats every two weeks",
+    "add": "Add reminder",
+    "create_failed": "Couldn't save that reminder -- try again in a moment.",
+    "all_clear": "Nothing to remember right now -- enjoy the quiet.",
+    "due": "Due",
+    "done_count": "{count} completed"
+  },
+  "settings": {
+    "title": "Settings",
+    "account": "Your account",
+    "name": "Name",
+    "email": "Email",
+    "role": "Role",
+    "language": "Language",
+    "language_hint": "This changes VERT's own screens. Firmware and alerts from devices stay as they are.",
+    "about": "About VERT",
+    "about_text": "VERT -- Versatile Eco-farming Robotic Technology -- watches over your greenhouse so you can spend less time worrying and more time growing."
+  },
+  "roles": {
+    "admin": "Admin",
+    "operator": "Operator",
+    "viewer": "Viewer"
+  },
+  "nav": {
+    "dashboard": "Dashboard",
+    "zones": "Zones",
+    "rules": "Automation",
+    "alerts": "Alerts",
+    "reminders": "Reminders",
+    "provision": "Add device",
+    "settings": "Settings",
+    "logout": "Log out"
+  }
+}
