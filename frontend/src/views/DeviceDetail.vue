@@ -5,6 +5,7 @@ import { useI18n } from 'vue-i18n'
 import { useDevicesStore } from '../stores/devices'
 import { useAuthStore } from '../stores/auth'
 import SensorChart from '../components/SensorChart.vue'
+import PlantHealthPanel from '../components/PlantHealthPanel.vue'
 import { subscribe } from '../api/liveSocket'
 import client from '../api/client'
 
@@ -28,16 +29,11 @@ const chartableMetrics = computed(() => {
 })
 const activeMetric = ref(null)
 
-// Two metrics known to always be measured together -- and worth reading
-// together, since it's the temperature/humidity combination (not either
-// one alone) that tells you anything about mold risk, VPD, or plant
-// stress. When a device has both, one merged chart replaces the
-// tab-switcher so both lines are visible at once instead of hiding one
-// behind the other.
-const comboSeries = [
-  { metric: 'temp_c', label: t('readings.temp_c'), color: '#e2572b', axis: 'y' },
-  { metric: 'humidity_pct', label: t('readings.humidity_pct'), color: '#1e88e5', axis: 'y1' }
-]
+// Temperature and humidity are read together (it's the pair that says
+// anything about mould risk or VPD), so a device with both shows them as
+// two aligned charts, one above the other, sharing the time range. Not
+// one chart with two y-axes: the alignment of two scales is arbitrary and
+// invents correlations that aren't in the data.
 const showComboChart = computed(() =>
   ['temp_c', 'humidity_pct'].every((m) => chartableMetrics.value.includes(m))
 )
@@ -94,12 +90,6 @@ const sensorReading = computed(() => {
   return { ...device.value.last_reading, ...liveOverlay.value }
 })
 
-const healthTone = computed(() => {
-  const label = healthReading.value?.label
-  if (label === 'thriving') return 'good'
-  if (label === 'needs_attention') return 'warn'
-  return 'neutral'
-})
 
 async function load() {
   loading.value = true
@@ -210,14 +200,7 @@ async function exportCsv() {
         </div>
       </section>
 
-      <section v-if="healthReading" class="card health-card" :class="healthTone">
-        <h2>{{ t('device_detail.plant_health') }}</h2>
-        <p class="note">{{ healthReading.note }}</p>
-        <div class="health-meta">
-          <span>{{ t('device_detail.health_score') }}: {{ Math.round(healthReading.health_score * 100) }}%</span>
-          <span>{{ t('device_detail.confidence') }}: {{ Math.round(healthReading.confidence * 100) }}%</span>
-        </div>
-      </section>
+      <PlantHealthPanel v-if="healthReading" :reading="healthReading" class="card" />
 
       <section v-else-if="sensorReading" class="card">
         <h2>{{ t('device_detail.latest_reading') }}</h2>
@@ -247,10 +230,12 @@ async function exportCsv() {
             @click="activeMetric = m"
           >{{ readingLabel(m) }}</button>
         </div>
-        <SensorChart
-          v-if="showComboChart"
-          :device-id="device.id" :series="comboSeries" :minutes="activeRangeMinutes"
-        />
+        <div v-if="showComboChart" class="stacked">
+          <p class="stack-label">{{ readingLabel('temp_c') }}</p>
+          <SensorChart :device-id="device.id" metric="temp_c" :minutes="activeRangeMinutes" color="#eb6834" />
+          <p class="stack-label">{{ readingLabel('humidity_pct') }}</p>
+          <SensorChart :device-id="device.id" metric="humidity_pct" :minutes="activeRangeMinutes" color="#2a78d6" />
+        </div>
         <SensorChart
           v-else-if="activeMetric"
           :device-id="device.id" :metric="activeMetric" :minutes="activeRangeMinutes" color="#1b5e20"
@@ -287,49 +272,49 @@ async function exportCsv() {
 </template>
 
 <style scoped>
-.device-detail { padding: 1.5rem; max-width: 700px; margin: 0 auto; }
-.back-link { color: var(--vert-green); text-decoration: none; font-size: 0.9rem; display: inline-block; margin-bottom: 1rem; }
+.device-detail { padding: 2rem clamp(1rem, 3vw, 2.5rem) 3rem; max-width: 980px; margin: 0 auto; }
+.back-link { color: var(--canopy-2); text-decoration: none; font-size: 0.9rem; font-weight: 600; display: inline-block; margin-bottom: 1rem; }
 .page-head { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1.5rem; }
-.subtitle { color: #666; margin: 0.15rem 0 0; }
-.dot { width: 14px; height: 14px; border-radius: 50%; background: #bbb; flex-shrink: 0; }
-.dot.online { background: #2e7d32; }
-.dot.offline { background: #c62828; }
-.card { background: white; border-radius: 12px; padding: 1.25rem; margin-bottom: 1.25rem; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
-.card h2 { margin-top: 0; font-size: 1rem; color: #1b5e20; }
-.fact-row { display: flex; justify-content: space-between; align-items: center; padding: 0.4rem 0; border-bottom: 1px solid #f0f0f0; font-size: 0.9rem; }
+.subtitle { color: var(--ink-2); margin: 0.15rem 0 0; }
+.dot { width: 14px; height: 14px; border-radius: 50%; background: var(--ink-3); flex-shrink: 0; }
+.dot.online { background: var(--good); }
+.dot.offline { background: transparent; box-shadow: inset 0 0 0 2px var(--critical); }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-l); padding: 1.25rem 1.4rem; margin-bottom: 1.25rem; box-shadow: var(--shadow); }
+.card h2 { margin: 0 0 0.6rem; font-size: 1.1rem; }
+.fact-row { display: flex; justify-content: space-between; align-items: center; padding: 0.5rem 0; border-bottom: 1px solid var(--line); font-size: 0.9rem; color: var(--ink-2); }
+.fact-row strong { color: var(--ink); }
 .fact-row:last-child { border-bottom: none; }
-.fact-row select { padding: 0.3rem 0.5rem; border-radius: 6px; border: 1px solid #ccc; }
-.health-card.good { background: #f1f8f2; }
-.health-card.warn { background: #fdf3f1; }
-.health-card .note { font-size: 1.05rem; margin: 0.25rem 0 0.75rem; }
-.health-meta { display: flex; gap: 1.5rem; font-size: 0.8rem; color: #666; }
-.stat-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 0.75rem; }
-.stat-tile { background: #f7f9f6; border-radius: 8px; padding: 0.6rem 0.75rem; display: flex; flex-direction: column; }
-.stat-label { font-size: 0.75rem; color: #777; text-transform: capitalize; }
-.stat-value { font-size: 1.1rem; font-weight: 600; }
-.photo-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 0.75rem; }
+.fact-row select { padding: 0.35rem 0.6rem; border-radius: 999px; border: 1px solid var(--line-strong); background: var(--surface); }
+.stat-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 0.75rem; }
+.stat-tile { background: var(--surface-sunk); border-radius: var(--radius-m); padding: 0.7rem 0.85rem; display: flex; flex-direction: column; }
+.stat-label { font-size: 0.75rem; color: var(--ink-3); font-weight: 600; }
+.stat-value { font-family: var(--font-display); font-size: 1.35rem; font-weight: 650; color: var(--ink); }
+.photo-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 0.75rem; }
 .photo { display: flex; flex-direction: column; gap: 0.25rem; text-decoration: none; color: inherit; }
-.photo img { width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: 8px; }
-.photo-date { font-size: 0.7rem; color: #888; }
-.muted { color: #888; }
-.error { color: #c62828; }
+.photo img { width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: var(--radius-m); }
+.photo-date { font-size: 0.72rem; color: var(--ink-3); }
+.muted { color: var(--ink-3); }
+.error { color: var(--critical); }
 .chart-head { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 0.5rem; }
+.chart-head h2 { margin: 0; }
 .range-tabs, .metric-tabs { display: flex; gap: 0.3rem; flex-wrap: wrap; margin-bottom: 0.75rem; }
 .range-tab, .metric-tab {
-  border: none; background: #f0f4ef; color: #445; font-size: 0.75rem; padding: 0.25rem 0.6rem;
-  border-radius: 999px; cursor: pointer;
+  border: 1px solid var(--line); background: var(--surface-sunk); color: var(--ink-2); font-size: 0.75rem; padding: 0.25rem 0.65rem;
+  border-radius: 999px; cursor: pointer; font-weight: 600;
 }
-.range-tab.active, .metric-tab.active { background: #1b5e20; color: white; }
+.range-tab.active, .metric-tab.active { background: var(--canopy); border-color: var(--canopy); color: var(--ink-inverse); }
+.stacked { display: flex; flex-direction: column; gap: 0.25rem; }
+.stack-label { font-size: 0.8rem; font-weight: 650; color: var(--ink-2); margin-top: 0.4rem; }
 .live-toggle {
-  border: 1px solid var(--vert-green); background: white; color: var(--vert-green);
-  padding: 0.35rem 0.8rem; border-radius: 999px; font-size: 0.8rem; cursor: pointer; font-weight: 600;
+  border: 1px solid var(--canopy-2); background: var(--surface); color: var(--canopy-2);
+  padding: 0.35rem 0.85rem; border-radius: 999px; font-size: 0.8rem; cursor: pointer; font-weight: 650;
 }
-.live-toggle.active { background: var(--vert-green); color: white; }
+.live-toggle.active { background: var(--canopy); color: var(--ink-inverse); }
 .export-btn {
-  margin-top: 0.85rem; border: 1px solid #ccc; background: white; color: #445;
-  padding: 0.4rem 0.9rem; border-radius: 999px; font-size: 0.8rem; cursor: pointer;
+  margin-top: 0.85rem; border: 1px solid var(--line-strong); background: var(--surface); color: var(--ink-2);
+  padding: 0.4rem 0.95rem; border-radius: 999px; font-size: 0.8rem; cursor: pointer; font-weight: 600;
 }
-.export-btn:hover:not(:disabled) { border-color: var(--vert-green); color: var(--vert-green); }
+.export-btn:hover:not(:disabled) { border-color: var(--canopy-2); color: var(--canopy-2); }
 .export-btn:disabled { opacity: 0.6; cursor: default; }
-.live-stream { width: 100%; border-radius: 10px; max-height: 360px; object-fit: cover; }
+.live-stream { width: 100%; border-radius: var(--radius-m); max-height: 420px; object-fit: cover; }
 </style>

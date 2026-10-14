@@ -13,6 +13,14 @@ academic or unclear). Importing does not change that.
 
     python import_public.py strawdi --root raw/StrawDI_Db1 --out datasets/strawdi
 
+  PlantifyDr (Kaggle lavaman151/plantifydr-dataset; PlantVillage-derived leaf
+  photos, pre-augmented) -> Stage B leaf folders, strawberry classes only
+  (healthy_leaf, leaf_scorch). Its own train/valid split is ignored: the
+  augmented copies of one leaf are grouped by a flip/rotation-invariant
+  perceptual hash and kept in one split, or the test score would flatter:
+
+    python import_public.py plantifydr --root <download>/PlantDiseasesDataset --out datasets/plantifydr
+
 Public photos differ from your greenhouse (camera, light, distance, variety):
 use them to pre-train, then fine-tune and *test* on your own labelled images.
 """
@@ -77,6 +85,77 @@ def afzaal(root: Path, out: Path, context: float) -> None:
     print(f"\nwrote {out}/<group>/<split>/<label>/ -- healthy classes come from your own images (see README)")
 
 
+# PlantifyDr strawberry class folders (matched case-insensitively on these words) -> stage_b_leaf labels.
+PLANTIFYDR = {"healthy": "healthy_leaf", "scorch": "leaf_scorch"}
+
+
+def _dhashes(path: Path) -> list[int]:
+    """64-bit difference hash of the image in all 8 flips/90-degree rotations."""
+    g = np.asarray(Image.open(path).convert("L").resize((9, 9), Image.Resampling.BILINEAR), dtype=np.int16)
+    out = []
+    for k in range(4):
+        r = np.rot90(g, k)
+        for v in (r, r[:, ::-1]):
+            bits = (v[:8, 1:] > v[:8, :-1]).flatten()
+            out.append(int("".join("1" if b else "0" for b in bits), 2))
+    return out
+
+
+def near_duplicate_groups(paths: list[Path], max_dist: int = 6) -> dict[Path, str]:
+    """path -> group key; images within `max_dist` bits (in any orientation) share one."""
+    parent = list(range(len(paths)))
+
+    def find(i: int) -> int:
+        while parent[i] != i:
+            parent[i] = parent[parent[i]]
+            i = parent[i]
+        return i
+
+    hashes = [_dhashes(p) for p in paths]
+    bands: dict[tuple[int, int], list[int]] = {}
+    for i, hs in enumerate(hashes):  # index orientation 0 in 4 16-bit bands (LSH)
+        for b in range(4):
+            bands.setdefault((b, (hs[0] >> (16 * b)) & 0xFFFF), []).append(i)
+    for i, hs in enumerate(hashes):
+        for h in hs:
+            for b in range(4):
+                for j in bands.get((b, (h >> (16 * b)) & 0xFFFF), []):
+                    if j != i and bin(h ^ hashes[j][0]).count("1") <= max_dist:
+                        parent[find(i)] = find(j)
+    members: dict[int, list[Path]] = {}
+    for i, p in enumerate(paths):
+        members.setdefault(find(i), []).append(p)
+    return {p: min(m).name for m in members.values() for p in m}
+
+
+def plantifydr(root: Path, out: Path, crop: str) -> None:
+    allowed = profile_labels()["stage_b_leaf"]
+    crop_dirs = [d for d in root.rglob("*") if d.is_dir() and d.name.lower() == crop.lower()]
+    if not crop_dirs:
+        raise SystemExit(f"no folder named {crop!r} under {root}")
+    files: dict[str, list[Path]] = {}
+    for class_dir in sorted({p.parent for d in crop_dirs for p in d.rglob("*") if p.suffix.lower() in IMAGE_EXTS}):
+        name = class_dir.name.lower()
+        hits = [label for word, label in PLANTIFYDR.items() if word in name]
+        if len(hits) != 1:
+            raise SystemExit(f"don't know which label {class_dir} is: add it to PLANTIFYDR in import_public.py")
+        assert hits[0] in allowed
+        files.setdefault(hits[0], []).extend(p for p in class_dir.iterdir() if p.suffix.lower() in IMAGE_EXTS)
+    seen: Counter[str] = Counter()
+    for label, paths in sorted(files.items()):
+        groups = near_duplicate_groups(sorted(paths))
+        for src in paths:
+            split = split_for(f"plantifydr/{label}/{groups[src]}")
+            dest = out / "stage_b_leaf" / split / label
+            dest.mkdir(parents=True, exist_ok=True)
+            Image.open(src).convert("RGB").save(dest / f"plantifydr_{src.stem}.jpg", quality=92)
+            seen[f"{split:5s} {label}"] += 1
+        print(f"{label}: {len(paths)} images in {len(set(groups.values()))} near-duplicate groups")
+    for k, v in sorted(seen.items()):
+        print(f"{v:6d}  {k}")
+    print(f"\nwrote {out}/stage_b_leaf/<split>/<label>/")
+
+
 def strawdi(root: Path, out: Path) -> None:
     writer = DetectionWriter(out, profile_labels()["stage_a"])
     n = 0
@@ -108,13 +187,16 @@ def strawdi(root: Path, out: Path) -> None:
 
 def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("dataset", choices=["afzaal", "strawdi"])
+    ap.add_argument("dataset", choices=["afzaal", "strawdi", "plantifydr"])
     ap.add_argument("--root", required=True, type=Path)
     ap.add_argument("--out", required=True, type=Path)
+    ap.add_argument("--crop", default="Strawberry", help="plantifydr: which plant's folder to import")
     ap.add_argument("--context", type=float, default=2.5, help="afzaal: crop side = lesion size x this")
     args = ap.parse_args()
     if args.dataset == "afzaal":
         afzaal(args.root, args.out, args.context)
+    elif args.dataset == "plantifydr":
+        plantifydr(args.root, args.out, args.crop)
     else:
         strawdi(args.root, args.out)
 

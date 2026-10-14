@@ -48,9 +48,9 @@ async function submit() {
 
 <style scoped>
 .auth-page { display: flex; justify-content: center; align-items: center; min-height: 100vh; }
-.auth-card { display: flex; flex-direction: column; gap: 0.75rem; width: 320px; background: white; padding: 2rem; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); }
+.auth-card { display: flex; flex-direction: column; gap: 0.75rem; width: 320px; background: var(--surface); padding: 2rem; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); }
 label { display: flex; flex-direction: column; gap: 0.25rem; font-size: 0.9rem; }
-input, select { padding: 0.5rem; border: 1px solid #ccc; border-radius: 6px; }
+input, select { padding: 0.5rem; border: 1px solid var(--line-strong); border-radius: 6px; }
 button { padding: 0.6rem; background: var(--vert-green); color: white; border: none; border-radius: 6px; cursor: pointer; }
-.error { color: #c62828; font-size: 0.85rem; }
+.error { color: var(--critical); font-size: 0.85rem; }
 </style>

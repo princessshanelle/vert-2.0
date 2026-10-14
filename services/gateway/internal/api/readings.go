@@ -36,7 +36,9 @@ func (h *ReadingsHandler) Metrics(w http.ResponseWriter, r *http.Request) {
 
 // History serves the points behind one chart. ?metric= is required;
 // ?minutes= defaults to a reasonable "what's happened recently" window
-// rather than forcing every caller to specify it.
+// rather than forcing every caller to specify it. Optional ?bucket=<seconds>
+// averages into time buckets (each point then also has min and max), for
+// charts spanning days or weeks.
 func (h *ReadingsHandler) History(w http.ResponseWriter, r *http.Request) {
 	deviceID := chi.URLParam(r, "deviceID")
 	metric := r.URL.Query().Get("metric")
@@ -52,7 +54,19 @@ func (h *ReadingsHandler) History(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	points, err := h.TS.History(r.Context(), deviceID, metric, time.Duration(minutes)*time.Minute)
+	bucket, ok := parseBucket(r.URL.Query().Get("bucket"))
+	if !ok {
+		writeError(w, http.StatusBadRequest, "bucket must be a whole number of seconds between 60 and 86400")
+		return
+	}
+	since := time.Duration(minutes) * time.Minute
+	var points []timeseries.Point
+	var err error
+	if bucket > 0 {
+		points, err = h.TS.HistoryBucketed(r.Context(), deviceID, metric, since, bucket)
+	} else {
+		points, err = h.TS.History(r.Context(), deviceID, metric, since)
+	}
 	if err != nil {
 		writeError(w, http.StatusInternalServerError, "could not load chart history")
 		return
@@ -136,4 +150,17 @@ func (h *ReadingsHandler) Export(w http.ResponseWriter, r *http.Request) {
 		_ = out.Write(record)
 	}
 	out.Flush()
+}
+
+// parseBucket reads ?bucket= (seconds). Empty means raw points (0).
+// Bounded so a typo can't ask TimescaleDB for millions of 1-second buckets.
+func parseBucket(raw string) (time.Duration, bool) {
+	if raw == "" {
+		return 0, true
+	}
+	n, err := strconv.Atoi(raw)
+	if err != nil || n < 60 || n > 86400 {
+		return 0, false
+	}
+	return time.Duration(n) * time.Second, true
 }

@@ -200,24 +200,24 @@ function scopeLabel(rule) {
 .rules { padding: 1.5rem; max-width: 700px; margin: 0 auto; }
 .page-head { margin-bottom: 1.25rem; display: flex; flex-wrap: wrap; align-items: center; gap: 0.75rem; }
 .page-head h1 { margin: 0; width: 100%; }
-.subtitle { color: #666; margin: 0; flex: 1; }
-.rule-form { display: flex; flex-direction: column; gap: 0.9rem; background: white; padding: 1.25rem; border-radius: 12px; margin-bottom: 1.25rem; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+.subtitle { color: var(--ink-2); margin: 0; flex: 1; }
+.rule-form { display: flex; flex-direction: column; gap: 0.9rem; background: var(--surface); padding: 1.25rem; border-radius: 12px; margin-bottom: 1.25rem; box-shadow: var(--shadow); border: 1px solid var(--line); }
 .field-row { display: flex; gap: 0.75rem; flex-wrap: wrap; }
 .field-row label { flex: 1; min-width: 110px; }
 label { display: flex; flex-direction: column; gap: 0.3rem; font-size: 0.85rem; }
-input, select { padding: 0.5rem; border: 1px solid #ccc; border-radius: 8px; }
-.section-label { font-size: 0.8rem; font-weight: 600; color: #1b5e20; margin: 0.25rem 0 0; }
+input, select { padding: 0.5rem; border: 1px solid var(--line-strong); border-radius: 8px; }
+.section-label { font-size: 0.8rem; font-weight: 600; color: var(--canopy); margin: 0.25rem 0 0; }
 .form-actions { display: flex; gap: 0.6rem; }
 button { padding: 0.55rem 1rem; background: var(--vert-green); color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; }
-button.secondary { background: transparent; color: #555; border: 1px solid #ccc; }
+button.secondary { background: transparent; color: var(--ink-2); border: 1px solid var(--line-strong); }
 button.link { background: none; color: var(--vert-green); padding: 0.2rem 0.4rem; font-weight: 500; }
-button.link.danger { color: #c62828; }
-.error { color: #c62828; margin: 0; }
-.empty { color: #666; }
+button.link.danger { color: var(--critical); }
+.error { color: var(--critical); margin: 0; }
+.empty { color: var(--ink-2); }
 .rule-list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 0.6rem; }
-.rule-list li { display: flex; justify-content: space-between; align-items: center; gap: 1rem; background: white; padding: 0.85rem 1rem; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+.rule-list li { display: flex; justify-content: space-between; align-items: center; gap: 1rem; background: var(--surface); padding: 0.85rem 1rem; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
 .rule-list li.disabled { opacity: 0.55; }
 .rule-main { display: flex; flex-direction: column; gap: 0.15rem; }
-.rule-detail { font-size: 0.8rem; color: #777; }
+.rule-detail { font-size: 0.8rem; color: var(--ink-3); }
 .rule-controls { display: flex; gap: 0.5rem; flex-shrink: 0; }
 </style>

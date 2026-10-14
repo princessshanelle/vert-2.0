@@ -106,23 +106,23 @@ function formatDate(iso) {
 <style scoped>
 .reminders { padding: 1.5rem; max-width: 600px; margin: 0 auto; }
 .page-head { margin-bottom: 1.25rem; }
-.subtitle { color: #666; margin-top: 0.25rem; }
-.new-reminder { display: flex; flex-direction: column; gap: 0.6rem; background: white; padding: 1.1rem; border-radius: 12px; margin-bottom: 1.25rem; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
-.new-reminder input, .new-reminder select { padding: 0.55rem; border: 1px solid #ccc; border-radius: 8px; }
+.subtitle { color: var(--ink-2); margin-top: 0.25rem; }
+.new-reminder { display: flex; flex-direction: column; gap: 0.6rem; background: var(--surface); padding: 1.1rem; border-radius: 12px; margin-bottom: 1.25rem; box-shadow: var(--shadow); border: 1px solid var(--line); }
+.new-reminder input, .new-reminder select { padding: 0.55rem; border: 1px solid var(--line-strong); border-radius: 8px; }
 .field-row { display: flex; gap: 0.5rem; flex-wrap: wrap; }
 .field-row input[type="datetime-local"] { flex: 1; min-width: 180px; }
 button { padding: 0.55rem 1rem; background: var(--vert-green); color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; }
-button.link { background: none; color: #c62828; padding: 0.2rem 0.4rem; font-weight: 500; flex-shrink: 0; }
-.error { color: #c62828; margin: 0; }
-.empty-state { text-align: center; padding: 3rem 1rem; background: white; border-radius: 12px; color: #555; }
+button.link { background: none; color: var(--critical); padding: 0.2rem 0.4rem; font-weight: 500; flex-shrink: 0; }
+.error { color: var(--critical); margin: 0; }
+.empty-state { text-align: center; padding: 3rem 1rem; background: var(--surface); border-radius: 12px; color: var(--ink-2); }
 .reminder-list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 0.5rem; }
-.reminder-list li { display: flex; justify-content: space-between; align-items: flex-start; gap: 1rem; background: white; padding: 0.85rem 1rem; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+.reminder-list li { display: flex; justify-content: space-between; align-items: flex-start; gap: 1rem; background: var(--surface); padding: 0.85rem 1rem; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
 .reminder-list li.completed { opacity: 0.6; }
 .check { display: flex; gap: 0.6rem; align-items: flex-start; cursor: pointer; }
 .check input { margin-top: 0.25rem; }
 .check span { display: flex; flex-direction: column; }
-.due { font-size: 0.75rem; color: #888; }
-.desc { font-size: 0.8rem; color: #666; }
-.done-section { margin-top: 1.5rem; color: #666; }
+.due { font-size: 0.75rem; color: var(--ink-3); }
+.desc { font-size: 0.8rem; color: var(--ink-2); }
+.done-section { margin-top: 1.5rem; color: var(--ink-2); }
 .done-section summary { cursor: pointer; font-size: 0.9rem; margin-bottom: 0.6rem; }
 </style>

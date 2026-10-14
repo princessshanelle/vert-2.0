@@ -131,37 +131,37 @@ async function toggleLive(event) {
 
 <style scoped>
 .device-card {
-  display: flex; flex-direction: column; gap: 0.6rem; background: white; padding: 1rem;
-  border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  display: flex; flex-direction: column; gap: 0.6rem; background: var(--surface); padding: 1rem;
+  border-radius: 12px; box-shadow: var(--shadow); border: 1px solid var(--line);
   text-decoration: none; color: inherit; transition: box-shadow 0.15s, transform 0.15s;
 }
 .device-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.1); transform: translateY(-1px); }
 .card-head { display: flex; align-items: center; gap: 0.65rem; }
-.dot { width: 10px; height: 10px; border-radius: 50%; background: #bbb; flex-shrink: 0; }
-.dot.online { background: #2e7d32; }
-.dot.offline { background: #c62828; }
+.dot { width: 10px; height: 10px; border-radius: 50%; background: var(--ink-3); flex-shrink: 0; }
+.dot.online { background: var(--good); }
+.dot.offline { background: var(--critical); }
 .body { display: flex; flex-direction: column; min-width: 0; flex: 1; }
 .body strong { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.type { font-size: 0.8rem; color: #666; }
-.status { font-size: 0.75rem; color: #888; }
+.type { font-size: 0.8rem; color: var(--ink-2); }
+.status { font-size: 0.75rem; color: var(--ink-3); }
 
 .eye-btn {
-  border: none; background: #f0f4ef; border-radius: 50%; width: 34px; height: 34px;
+  border: none; background: var(--surface-sunk); border-radius: 50%; width: 34px; height: 34px;
   font-size: 1rem; cursor: pointer; flex-shrink: 0; line-height: 1;
 }
-.eye-btn.active { background: #dff0de; }
+.eye-btn.active { background: var(--canopy-wash); }
 
 .camera-preview { min-height: 40px; display: flex; align-items: center; justify-content: center; }
 .live-img { width: 100%; border-radius: 8px; max-height: 160px; object-fit: cover; }
-.live-hint, .live-pending { font-size: 0.78rem; color: #999; margin: 0; }
+.live-hint, .live-pending { font-size: 0.78rem; color: var(--ink-3); margin: 0; }
 
 .sensor-preview { display: flex; flex-direction: column; gap: 0.35rem; }
 .metric-row { display: flex; align-items: baseline; justify-content: space-between; gap: 0.5rem; }
 .metric-tabs { display: flex; gap: 0.3rem; flex-wrap: wrap; }
 .metric-tab {
-  border: none; background: #f0f4ef; color: #445; font-size: 0.7rem; padding: 0.2rem 0.5rem;
+  border: none; background: var(--surface-sunk); color: var(--ink-2); font-size: 0.7rem; padding: 0.2rem 0.5rem;
   border-radius: 999px; cursor: pointer;
 }
-.metric-tab.active { background: #1b5e20; color: white; }
-.metric-value { font-size: 1.1rem; font-weight: 700; color: #1b5e20; flex-shrink: 0; }
+.metric-tab.active { background: var(--canopy); color: white; }
+.metric-value { font-size: 1.1rem; font-weight: 700; color: var(--canopy); flex-shrink: 0; }
 </style>

@@ -89,18 +89,18 @@ function startAnother() {
 <style scoped>
 .provision { padding: 1.5rem; max-width: 480px; margin: 0 auto; }
 .page-head { margin-bottom: 1.25rem; }
-.subtitle { color: #666; margin-top: 0.25rem; }
-.provision-form { display: flex; flex-direction: column; gap: 1rem; background: white; padding: 1.5rem; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+.subtitle { color: var(--ink-2); margin-top: 0.25rem; }
+.provision-form { display: flex; flex-direction: column; gap: 1rem; background: var(--surface); padding: 1.5rem; border-radius: 12px; box-shadow: var(--shadow); border: 1px solid var(--line); }
 .provision-form label { display: flex; flex-direction: column; gap: 0.3rem; font-size: 0.9rem; }
-.provision-form input, .provision-form select { padding: 0.55rem; border: 1px solid #ccc; border-radius: 8px; }
-.provision-form small { color: #888; font-weight: 400; }
+.provision-form input, .provision-form select { padding: 0.55rem; border: 1px solid var(--line-strong); border-radius: 8px; }
+.provision-form small { color: var(--ink-3); font-weight: 400; }
 button { padding: 0.6rem 1rem; background: var(--vert-green); color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; }
 button.secondary { background: transparent; color: var(--vert-green); border: 1px solid var(--vert-green); margin-top: 1rem; }
-.error { color: #c62828; margin: 0; }
-.secret-card { background: white; padding: 1.5rem; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); border: 2px solid #f6c945; }
+.error { color: var(--critical); margin: 0; }
+.secret-card { background: var(--surface); padding: 1.5rem; border-radius: 12px; box-shadow: var(--shadow); border: 1px solid var(--line); border: 2px solid #f6c945; }
 .secret-card h2 { margin-top: 0; font-size: 1.05rem; }
 .warning { color: #8a6d00; background: #fff8e1; padding: 0.6rem 0.75rem; border-radius: 8px; font-size: 0.85rem; }
 .secret-box { display: flex; gap: 0.5rem; align-items: center; margin: 1rem 0; }
-.secret-box code { flex: 1; background: #f7f9f6; padding: 0.6rem 0.75rem; border-radius: 8px; word-break: break-all; font-size: 0.9rem; }
-.next-step { font-size: 0.85rem; color: #555; }
+.secret-box code { flex: 1; background: var(--surface-sunk); padding: 0.6rem 0.75rem; border-radius: 8px; word-break: break-all; font-size: 0.9rem; }
+.next-step { font-size: 0.85rem; color: var(--ink-2); }
 </style>

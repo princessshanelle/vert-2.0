@@ -18,6 +18,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import sys
 import time
 from pathlib import Path
 
@@ -28,7 +29,11 @@ from torchvision import datasets, transforms
 
 from vertml.data import profile_labels
 from vertml.models import CLASSIFIERS, IMAGENET_MEAN, IMAGENET_STD, build_classifier
-from vertml.metrics import per_class_report
+from vertml.metrics import confusion_matrix, per_class_report
+
+
+if sys.platform == "darwin":  # macOS's shared-memory manager times out under load ("connection has timed out")
+    torch.multiprocessing.set_sharing_strategy("file_system")
 
 
 def loaders(root: Path, size: int, batch: int, workers: int) -> tuple[dict[str, DataLoader], list[str]]:
@@ -55,11 +60,12 @@ def loaders(root: Path, size: int, batch: int, workers: int) -> tuple[dict[str, 
     # Rare classes (real disease) are the ones that matter: balance the sampling.
     counts = torch.bincount(torch.tensor(sets["train"].targets), minlength=len(classes)).float()
     weights = (1.0 / counts.clamp(min=1))[sets["train"].targets]
+    pin = torch.cuda.is_available()
     out = {"train": DataLoader(sets["train"], batch, sampler=WeightedRandomSampler(weights, len(weights)),
-                               num_workers=workers)}
+                               num_workers=workers, pin_memory=pin, persistent_workers=workers > 0)}
     for s in ("val", "test"):
         if s in sets:
-            out[s] = DataLoader(sets[s], batch, shuffle=False, num_workers=workers)
+            out[s] = DataLoader(sets[s], batch, shuffle=False, num_workers=workers, pin_memory=pin)
     return out, classes
 
 
@@ -97,7 +103,9 @@ def main() -> None:
     if unknown:
         raise SystemExit(f"dataset classes {sorted(unknown)} are not in profile labels.{args.group}")
 
-    device = "cuda" if torch.cuda.is_available() else "cpu"
+    device = "cuda" if torch.cuda.is_available() else "mps" if torch.backends.mps.is_available() else "cpu"
+    amp = device == "cuda"  # mixed precision: ~2x faster on a Colab T4, same accuracy
+    scaler = torch.amp.GradScaler("cuda", enabled=amp)
     model = build_classifier(args.arch, len(classes), pretrained=not args.no_pretrained).to(device)
     opt = torch.optim.AdamW(model.parameters(), lr=args.lr, weight_decay=1e-4)
     sched = torch.optim.lr_scheduler.CosineAnnealingLR(opt, T_max=args.epochs)
@@ -106,19 +114,25 @@ def main() -> None:
     run.mkdir(parents=True, exist_ok=True)
 
     best, best_epoch = -1.0, 0
+    history: list[dict[str, float]] = []
     for epoch in range(1, args.epochs + 1):
         model.train()
         t0, total = time.time(), 0.0
         for x, t in dl["train"]:
             opt.zero_grad()
-            loss = loss_fn(model(x.to(device)), t.to(device))
-            loss.backward()
-            opt.step()
+            with torch.autocast("cuda", enabled=amp):
+                loss = loss_fn(model(x.to(device, non_blocking=True)), t.to(device, non_blocking=True))
+            scaler.scale(loss).backward()
+            scaler.step(opt)
+            scaler.update()
             total += loss.item() * len(t)
         sched.step()
-        score = per_class_report(*predict(model, dl.get("val", dl["train"]), device), classes)["macro_f1"]
-        print(f"epoch {epoch:3d}  loss {total / len(dl['train'].dataset):.3f}  val macro-F1 {score:.3f}  "
-              f"({time.time() - t0:.0f}s)")
+        val = per_class_report(*predict(model, dl.get("val", dl["train"]), device), classes)
+        score = val["macro_f1"]
+        loss_avg = total / len(dl["train"].dataset)
+        history.append({"epoch": epoch, "loss": round(loss_avg, 4), "val_macro_f1": score, "val_accuracy": val["accuracy"]})
+        (run / "history.json").write_text(json.dumps(history, indent=2))
+        print(f"epoch {epoch:3d}  loss {loss_avg:.3f}  val macro-F1 {score:.3f}  ({time.time() - t0:.0f}s)")
         if score > best:
             best, best_epoch = score, epoch
             torch.save({"kind": "classifier", "arch": args.arch, "size": args.size, "labels": classes,
@@ -131,7 +145,10 @@ def main() -> None:
     ckpt = torch.load(run / "best.pt", weights_only=False)
     model.load_state_dict(ckpt["state_dict"])
     split = "test" if "test" in dl else "val" if "val" in dl else "train"
-    report = per_class_report(*predict(model, dl[split], device), classes)
+    y, p = predict(model, dl[split], device)
+    report = per_class_report(y, p, classes)
+    report["confusion"] = confusion_matrix(y, p, len(classes))  # rows: true label, columns: predicted
+    report["labels"] = classes
     report.update({"split": split, "best_epoch": best_epoch, "arch": args.arch})
     (run / "report.json").write_text(json.dumps(report, indent=2))
     print(f"\n=== {split} split ===  accuracy {report['accuracy']:.3f}  macro-F1 {report['macro_f1']:.3f}")

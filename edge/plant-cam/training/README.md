@@ -20,6 +20,17 @@ architectures (no AGPL; see [DATASETS.md](DATASETS.md) for data licences):
 Without Stage A, the leaf classifier classifies tiles of the canopy, so a
 leaf model alone already enables disease findings.
 
+## Quick start: a first leaf model on Colab, with no setup
+
+Upload [`colab/vert_strawberry_colab.ipynb`](colab/vert_strawberry_colab.ipynb) to
+[Colab](https://colab.research.google.com) (**File > Upload notebook**), select **Runtime > Change runtime type > T4 GPU**,
+then **Runtime > Run all**. It downloads the public PlantifyDr dataset from Kaggle (no login needed), trains
+the `strawberry-leaf` classifier (healthy vs leaf scorch), checks the export and downloads a model package
+that is ready for `deploy-model.sh`. The notebook embeds this folder's code. After changing anything here, run
+`python colab/make_notebook.py` (a test fails until you do).
+
+That model knows only lab photos of single leaves. The steps below make it accurate on your own camera.
+
 ## 0. Set up a training machine
 
 A GPU (Colab/Kaggle T4 is enough) or a Linux PC. A Pi is fine for the
@@ -81,6 +92,7 @@ Read [DATASETS.md](DATASETS.md) first; these are non-commercial or unclear.
 ```bash
 python import_public.py afzaal --root raw/strawberry --out datasets/afzaal   # Kaggle usmanafzaal/strawberry-disease-detection-dataset
 python import_public.py strawdi --root raw/StrawDI_Db1 --out datasets/strawdi
+python import_public.py plantifydr --root raw/PlantDiseasesDataset --out datasets/plantifydr   # Kaggle lavaman151/plantifydr-dataset
 ```
 
 Merge class folders/annotations as you see fit, but always **validate and

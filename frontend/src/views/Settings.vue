@@ -2,6 +2,7 @@
 import { useI18n } from 'vue-i18n'
 import { useAuthStore } from '../stores/auth'
 import { SUPPORTED_LOCALES, setLocale } from '../i18n'
+import { themeMode, setTheme } from '../lib/theme'
 
 const { t, locale } = useI18n()
 const auth = useAuthStore()
@@ -28,6 +29,16 @@ const auth = useAuthStore()
       </select>
     </section>
 
+    <section class="card">
+      <h2>{{ t('settings.appearance') }}</h2>
+      <p class="muted">{{ t('settings.appearance_hint') }}</p>
+      <div class="seg theme-pick" role="group" :aria-label="t('settings.appearance')">
+        <button v-for="m in ['auto', 'light', 'dark']" :key="m" :aria-pressed="themeMode === m" @click="setTheme(m)">
+          {{ t(`settings.theme_${m}`) }}
+        </button>
+      </div>
+    </section>
+
     <section class="card about">
       <h2>{{ t('settings.about') }}</h2>
       <p>{{ t('settings.about_text') }}</p>
@@ -36,13 +47,15 @@ const auth = useAuthStore()
 </template>
 
 <style scoped>
-.settings { padding: 1.5rem; max-width: 500px; margin: 0 auto; }
+.settings { padding: 2rem clamp(1rem, 3vw, 2.5rem); max-width: 560px; margin: 0 auto; }
+.theme-pick { margin-top: 0.6rem; }
+select { background: var(--surface); }
 .page-head { margin-bottom: 1.25rem; }
-.card { background: white; border-radius: 12px; padding: 1.25rem; margin-bottom: 1.25rem; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
-.card h2 { margin-top: 0; font-size: 1rem; color: #1b5e20; }
-.fact-row { display: flex; justify-content: space-between; padding: 0.4rem 0; border-bottom: 1px solid #f0f0f0; font-size: 0.9rem; }
+.card { background: var(--surface); border-radius: 12px; padding: 1.25rem; margin-bottom: 1.25rem; box-shadow: var(--shadow); border: 1px solid var(--line); }
+.card h2 { margin-top: 0; font-size: 1rem; color: var(--canopy); }
+.fact-row { display: flex; justify-content: space-between; padding: 0.4rem 0; border-bottom: 1px solid var(--line); font-size: 0.9rem; }
 .fact-row:last-child { border-bottom: none; }
-.muted { color: #777; font-size: 0.85rem; }
-select { padding: 0.5rem; border: 1px solid #ccc; border-radius: 8px; margin-top: 0.5rem; }
-.about p { color: #555; line-height: 1.5; }
+.muted { color: var(--ink-3); font-size: 0.85rem; }
+select { padding: 0.5rem; border: 1px solid var(--line-strong); border-radius: 8px; margin-top: 0.5rem; }
+.about p { color: var(--ink-2); line-height: 1.5; }
 </style>

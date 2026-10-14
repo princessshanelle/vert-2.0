@@ -3,14 +3,28 @@
 plant-cam is an ordinary VERT device (`device_type: ai-camera`): provisioned
 like any sensor, authenticated per device by RabbitMQ through the
 gateway, readings on the standard envelope, photos through the gateway's
-frame store, commands from the dashboard. What the dashboard already does
-with it, with **no frontend change**:
+frame store, commands from the dashboard. What the dashboard does with it:
 
-* the plant-health card (`label`, `note`, `health_score`, `confidence`)
-* charts for every numeric field (canopy, fruit counts, risk indices, ...)
-* the photo gallery (annotated snapshots)
-* the live view (eye icon -> `start_stream` -> `http://<ip>:81/stream`)
-* automation rules on any numeric field
+* **Overview** (`frontend/src/views/Dashboard.vue`): a briefing written from
+  live readings (active `conditions`, `risk_*`, ripe fruit, climate against
+  the strawberry targets, devices gone quiet), then one band per zone with
+  the health dial, findings, disease-pressure meters and a ripeness strip
+  (`fruit_*_count`).
+* **Plant-health panel** on the camera's page (`PlantHealthPanel.vue`): note,
+  each finding with status, confidence, persistence and `first_seen`, the
+  `env_*` air it was judged against, and `model_version`.
+* **Analytics** (`views/Analytics.vue`): `health_score`, every `cond_*_conf`,
+  `risk_botrytis`, ripe fruit, canopy and lux over 24 h / 7 d / 30 d, next to
+  the zone's climate (time in target range, derived VPD and dew-point margin,
+  hour-of-day humidity pattern), each with a table view. Long ranges use the
+  gateway's bucketed history (`GET .../readings?metric=&minutes=&bucket=<s>`,
+  avg + min + max per bucket).
+* charts for every numeric field, the photo gallery, the live view
+  (`start_stream` -> `http://<ip>:81/stream`) and automation rules on any
+  numeric field, as before.
+
+The strawberry targets the dashboard judges climate against live in
+`frontend/src/lib/agronomy.js` (`TARGETS`), next to the VPD and dew-point maths.
 
 ## Alerts
 

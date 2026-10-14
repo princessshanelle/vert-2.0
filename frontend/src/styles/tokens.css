@@ -1,0 +1,205 @@
+/* VERT design tokens.
+ *
+ * Canopy green carries the brand; "berry" is the one accent and is kept
+ * for the brand mark and harvest. Status colours mean status only (good /
+ * warning / serious / critical) and always come with a word or icon.
+ * Chart series colours are separate again (dataviz reference palette), so
+ * a humidity line can never be mistaken for an alert.
+ *
+ * Dark mode is its own set of steps, not an inversion. It follows the OS
+ * unless the user picks one in Settings (data-theme on <html>).
+ */
+@import '@fontsource-variable/bricolage-grotesque/standard.css';
+
+:root {
+  color-scheme: light;
+  --font-display: 'Bricolage Grotesque Variable', system-ui, sans-serif;
+  --font-body: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+
+  /* surfaces */
+  --page: #eef2ef;          /* polytunnel film: cool, faintly green */
+  --surface: #ffffff;
+  --surface-sunk: #f4f7f5;
+  --surface-raised: #ffffff;
+  --line: #dbe3de;
+  --line-strong: #c3cfc8;
+
+  /* ink */
+  --ink: #12201a;
+  --ink-2: #44554c;
+  --ink-3: #6f7f76;
+  --ink-inverse: #f2f7f3;
+
+  /* brand */
+  --canopy: #0f3d2e;
+  --canopy-2: #1d5c45;
+  --canopy-wash: #e2ede7;
+  --berry: #b8336a;
+  --berry-wash: #f8e6ee;
+
+  /* status (fixed meanings) */
+  --good: #0c8a0c;
+  --good-wash: #e3f3e3;
+  --warning: #b37400;
+  --warning-mark: #fab219;
+  --warning-wash: #fdf2d9;
+  --serious: #c2531f;
+  --serious-mark: #ec835a;
+  --serious-wash: #fce8de;
+  --critical: #c22f2f;
+  --critical-wash: #fbe3e3;
+
+  /* chart series (dataviz reference slots) */
+  --series-temp: #eb6834;
+  --series-humidity: #2a78d6;
+  --series-moisture: #1baf7a;
+  --series-vpd: #6250d6;
+  --series-health: #1d5c45;
+  --series-light: #eda100;
+  --grid: #e6ebe8;
+  --axis: #c3cfc8;
+
+  /* ripeness: the fruit's own colours, an ordered ramp */
+  --ripe-green: #8fbf5a;
+  --ripe-white: #e8e2c8;
+  --ripe-turning: #f0a07a;
+  --ripe-ripe: #d1293d;
+  --ripe-over: #7a1626;
+
+  --radius-s: 6px;
+  --radius-m: 10px;
+  --radius-l: 18px;
+  --shadow: 0 1px 2px rgba(15, 61, 46, 0.06), 0 6px 18px rgba(15, 61, 46, 0.05);
+  --focus: 0 0 0 3px rgba(42, 120, 214, 0.45);
+  --sidebar-w: 236px;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:where(:not([data-theme='light'])) {
+    color-scheme: dark;
+    --page: #0c1411;
+    --surface: #141e1a;
+    --surface-sunk: #101915;
+    --surface-raised: #1a2621;
+    --line: #24332c;
+    --line-strong: #33463d;
+    --ink: #e8f0eb;
+    --ink-2: #b4c4bb;
+    --ink-3: #85968d;
+    --ink-inverse: #0c1411;
+    --canopy: #7fd1a8;
+    --canopy-2: #5fbf91;
+    --canopy-wash: #1a3328;
+    --berry: #f07aa5;
+    --berry-wash: #3a1a28;
+    --good: #3ec43e;
+    --good-wash: #15301a;
+    --warning: #fab219;
+    --warning-wash: #33280d;
+    --serious: #ec835a;
+    --serious-wash: #3a2016;
+    --critical: #f06b6b;
+    --critical-wash: #3a1717;
+    --series-temp: #d95926;
+    --series-humidity: #3987e5;
+    --series-moisture: #199e70;
+    --series-vpd: #9085e9;
+    --series-health: #5fbf91;
+    --series-light: #c98500;
+    --grid: #1f2b26;
+    --axis: #33463d;
+    --ripe-white: #cfc8a8;
+    --ripe-over: #a8324a;
+    --shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 8px 24px rgba(0, 0, 0, 0.25);
+  }
+}
+:root[data-theme='dark'] {
+  color-scheme: dark;
+  --page: #0c1411;
+  --surface: #141e1a;
+  --surface-sunk: #101915;
+  --surface-raised: #1a2621;
+  --line: #24332c;
+  --line-strong: #33463d;
+  --ink: #e8f0eb;
+  --ink-2: #b4c4bb;
+  --ink-3: #85968d;
+  --ink-inverse: #0c1411;
+  --canopy: #7fd1a8;
+  --canopy-2: #5fbf91;
+  --canopy-wash: #1a3328;
+  --berry: #f07aa5;
+  --berry-wash: #3a1a28;
+  --good: #3ec43e;
+  --good-wash: #15301a;
+  --warning: #fab219;
+  --warning-wash: #33280d;
+  --serious: #ec835a;
+  --serious-wash: #3a2016;
+  --critical: #f06b6b;
+  --critical-wash: #3a1717;
+  --series-temp: #d95926;
+  --series-humidity: #3987e5;
+  --series-moisture: #199e70;
+  --series-vpd: #9085e9;
+  --series-health: #5fbf91;
+  --series-light: #c98500;
+  --grid: #1f2b26;
+  --axis: #33463d;
+  --ripe-white: #cfc8a8;
+  --ripe-over: #a8324a;
+  --shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 8px 24px rgba(0, 0, 0, 0.25);
+}
+
+/* base */
+*, *::before, *::after { box-sizing: border-box; }
+html { font-family: var(--font-body); color: var(--ink); background: var(--page); -webkit-text-size-adjust: 100%; }
+body { margin: 0; background: var(--page); line-height: 1.5; }
+h1, h2, h3 { font-family: var(--font-display); line-height: 1.15; margin: 0; color: var(--ink); font-weight: 650; }
+h1 { font-size: clamp(1.6rem, 1.2rem + 1.4vw, 2.2rem); letter-spacing: -0.02em; }
+h2 { font-size: 1.15rem; letter-spacing: -0.01em; }
+h3 { font-size: 0.98rem; }
+p { margin: 0; }
+a { color: var(--canopy-2); }
+button, input, select, textarea { font: inherit; color: inherit; }
+:focus-visible { outline: none; box-shadow: var(--focus); border-radius: var(--radius-s); }
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+}
+
+/* shared primitives */
+.panel {
+  background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-l);
+  padding: 1.25rem; box-shadow: var(--shadow);
+}
+.muted { color: var(--ink-3); }
+.figure { font-family: var(--font-display); font-weight: 650; letter-spacing: -0.02em; }
+.tabular { font-variant-numeric: tabular-nums; }
+.btn {
+  display: inline-flex; align-items: center; gap: 0.4rem; border-radius: 999px; cursor: pointer;
+  padding: 0.45rem 0.95rem; font-size: 0.85rem; font-weight: 600; text-decoration: none;
+  border: 1px solid var(--line-strong); background: var(--surface); color: var(--ink);
+}
+.btn:hover:not(:disabled) { border-color: var(--canopy-2); color: var(--canopy-2); }
+.btn:disabled { opacity: 0.55; cursor: default; }
+.btn.primary { background: var(--canopy); border-color: var(--canopy); color: var(--ink-inverse); }
+.btn.primary:hover:not(:disabled) { background: var(--canopy-2); color: var(--ink-inverse); }
+.seg { display: inline-flex; background: var(--surface-sunk); border: 1px solid var(--line); border-radius: 999px; padding: 2px; }
+.seg button {
+  border: 0; background: transparent; padding: 0.28rem 0.7rem; border-radius: 999px; font-size: 0.78rem;
+  cursor: pointer; color: var(--ink-2); font-weight: 600;
+}
+.seg button[aria-pressed='true'] { background: var(--surface); color: var(--ink); box-shadow: 0 1px 2px rgba(0, 0, 0, 0.12); }
+.status-chip {
+  display: inline-flex; align-items: center; gap: 0.35rem; font-size: 0.75rem; font-weight: 650;
+  padding: 0.15rem 0.55rem 0.15rem 0.45rem; border-radius: 999px; white-space: nowrap;
+}
+.status-chip::before { content: ''; width: 0.5rem; height: 0.5rem; border-radius: 50%; background: currentColor; }
+.status-chip.good { color: var(--good); background: var(--good-wash); }
+.status-chip.warning { color: var(--warning); background: var(--warning-wash); }
+.status-chip.serious { color: var(--serious); background: var(--serious-wash); }
+.status-chip.critical { color: var(--critical); background: var(--critical-wash); }
+.status-chip.neutral { color: var(--ink-3); background: var(--surface-sunk); }
+.visually-hidden {
+  position: absolute !important; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap;
+}

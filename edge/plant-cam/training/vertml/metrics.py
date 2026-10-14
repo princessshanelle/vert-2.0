@@ -23,6 +23,14 @@ def per_class_report(y: list[int], p: list[int], classes: list[str]) -> dict[str
     return out
 
 
+def confusion_matrix(y: list[int], p: list[int], n: int) -> list[list[int]]:
+    """rows: true class, columns: predicted class."""
+    m = [[0] * n for _ in range(n)]
+    for a, b in zip(y, p, strict=True):
+        m[a][b] += 1
+    return m
+
+
 def iou(a: list[float], b: list[float]) -> float:
     ix = max(0.0, min(a[2], b[2]) - max(a[0], b[0]))
     iy = max(0.0, min(a[3], b[3]) - max(a[1], b[1]))

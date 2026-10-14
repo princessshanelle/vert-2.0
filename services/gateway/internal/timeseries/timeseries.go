@@ -73,10 +73,13 @@ func toFloat(v any) (float64, bool) {
 	return 0, false
 }
 
-// Point is one plotted value.
+// Point is one plotted value. Min and Max are set only for bucketed
+// history (HistoryBucketed), where Value is the bucket's average.
 type Point struct {
 	Time  time.Time `json:"t"`
 	Value float64   `json:"v"`
+	Min   *float64  `json:"min,omitempty"`
+	Max   *float64  `json:"max,omitempty"`
 }
 
 // Metrics lists which numeric fields a device has ever reported, newest
@@ -122,6 +125,34 @@ func (db *DB) History(ctx context.Context, deviceID, metric string, since time.D
 		if err := rows.Scan(&p.Time, &p.Value); err != nil {
 			return nil, err
 		}
+		out = append(out, p)
+	}
+	return out, rows.Err()
+}
+
+// HistoryBucketed is History averaged into fixed time buckets, each point
+// carrying the bucket's min and max too: a week of 30-second readings is
+// ~20k rows raw but a few hundred bucketed, and the min/max keep the
+// extremes (a 2 a.m. humidity spike) that a plain average would hide.
+func (db *DB) HistoryBucketed(ctx context.Context, deviceID, metric string, since, bucket time.Duration) ([]Point, error) {
+	rows, err := db.Pool.Query(ctx, `
+		select time_bucket($4::interval, ts) as b, avg(value), min(value), max(value) from readings
+		where device_id = $1 and metric = $2 and ts > now() - $3::interval
+		group by b order by b asc
+	`, deviceID, metric, since.String(), bucket.String())
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var out []Point
+	for rows.Next() {
+		var p Point
+		var lo, hi float64
+		if err := rows.Scan(&p.Time, &p.Value, &lo, &hi); err != nil {
+			return nil, err
+		}
+		p.Min, p.Max = &lo, &hi
 		out = append(out, p)
 	}
 	return out, rows.Err()

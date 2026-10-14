@@ -6,6 +6,7 @@ import {
 import 'chartjs-adapter-date-fns'
 import { useDevicesStore } from '../stores/devices'
 import { subscribe } from '../api/liveSocket'
+import { cssVar, themeVersion } from '../lib/theme'
 
 Chart.register(LineController, LineElement, PointElement, LinearScale, TimeScale, Filler, Tooltip, Legend)
 
@@ -69,12 +70,15 @@ function buildChart(seriesPoints) {
       type: 'time',
       display: !props.compact,
       time: { unit: props.minutes > 180 ? 'hour' : 'minute' },
-      grid: { display: false }
+      grid: { display: false },
+      ticks: { color: cssVar('--ink-3'), maxRotation: 0 }
     },
     y: {
       display: !props.compact,
       position: 'left',
-      grid: { color: '#f0f0f0' }
+      grid: { color: cssVar('--grid') },
+      border: { display: false },
+      ticks: { color: cssVar('--ink-3') }
     }
   }
   if (usesRightAxis.value) {
@@ -139,7 +143,7 @@ onBeforeUnmount(() => {
   unsubscribeLive?.()
   chart?.destroy()
 })
-watch(() => [props.deviceId, props.metric, props.series, props.minutes], () => {
+watch(() => [props.deviceId, props.metric, props.series, props.minutes, themeVersion.value], () => {
   chart?.destroy()
   chart = null
   refresh()
