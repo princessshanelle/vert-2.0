@@ -1,210 +1,153 @@
-# Training the plant-health model
-
-The full loop from photos to a model running on the Pi. Each step is
-one command. Steps 1 to 7 run on a training machine (Linux, WSL2 or Google
-Colab with a GPU). A Pi 4 is far too slow to train on.
+# Training the strawberry models
 
 ```
- photos ──► label ──► build dataset ──► train ──► check ──► export INT8 ──► deploy to Pi
-   ▲                                                                            │
-   └────────────── Pi saves new raw photos to /var/lib/plant-cam/dataset ◄──────┘
+ Pi: active-learning samples + raw frames ──► label (Label Studio) ──► convert ──► train (GPU/Colab)
+          ▲                                                                          │
+          │      plant_cam evaluate (precision/recall on YOUR held-out photos)  ◄── export ──► deploy-model.sh
+          └──────────────────────────── new model running on the Pi ◄────────────────────────────┘
 ```
 
-The model is **YOLO11n**, the smallest Ultralytics detector at about 2.6M
-parameters. It is fine-tuned from COCO-pretrained weights, trained at
-320×320, and exported to INT8 TFLite. On a Pi 4 it takes roughly 150–400 ms
-per analysis. That's plenty, since the Pi analyses once every 30 s.
+Three kinds of model, all optional, all permissively licensed torchvision
+architectures (no AGPL; see [DATASETS.md](DATASETS.md) for data licences):
 
-The classes are defined once, in [`classes.yaml`](classes.yaml):
-`healthy_leaf`, `chlorosis` (yellowing), `leaf_spot_blight`, `mildew_mold`
-and `pest`.
+| Slot (profile) | Stage | Architecture | Labels (`profiles/strawberry/profile.yaml`) |
+|---|---|---|---|
+| `strawberry-detector` | A: find objects | SSDLite320-MobileNetV3 | `labels.stage_a`: leaf, flower, fruit, runner |
+| `strawberry-leaf` | B: leaf crops | MobileNetV3-Small | `labels.stage_b_leaf`: healthy_leaf, powdery_mildew_leaf, leaf_scorch, ... |
+| `strawberry-fruit` | B: fruit crops | MobileNetV3-Small | `labels.stage_b_fruit`: fruit_green ... fruit_overripe, grey_mould_fruit, ... |
+| `strawberry-flower` | B: flower crops | MobileNetV3-Small | `labels.stage_b_flower` |
 
----
+Without Stage A, the leaf classifier classifies tiles of the canopy, so a
+leaf model alone already enables disease findings.
 
-## Step 0: Set up the training machine
+## 0. Set up a training machine
+
+A GPU (Colab/Kaggle T4 is enough) or a Linux PC. A Pi is fine for the
+smoke test, far too slow for real training.
 
 ```bash
 cd edge/plant-cam/training
-python -m venv .venv && source .venv/bin/activate
+python -m venv .venv && . .venv/bin/activate
 pip install -r requirements.txt
-python -c "import torch; print('GPU:', torch.cuda.is_available())"
 ```
 
-No GPU? Use **Google Colab** or **Kaggle**. Upload
-[`vert_training.ipynb`](vert_training.ipynb) (File → Upload notebook),
-switch the runtime to a T4 GPU, and choose Run all. The notebook embeds
-every script in this folder and runs Steps 1 and 4–7 below. If you edit
-any script or `classes.yaml`, regenerate it with `python make_notebook.py`.
-A CPU works too, but expect hours per run instead of minutes.
+On Colab, upload `edge/plant-cam/training` **and** `edge/plant-cam/profiles`,
+then `export VERT_PROFILES_DIR=/content/profiles` if they aren't side by side.
 
-## Step 1: Get a starter dataset (public data)
+## 1. Collect photos from your greenhouse
 
-You need something before your own photos are labelled. **PlantDoc**
-is a good fit because its photos were taken in real fields rather than a
-lab, and it has bounding boxes.
+The Pi keeps, in `/var/lib/plant-cam/active-learning/` (2 GB cap):
+* one **raw frame per hour** (no overlay, only in good light): label these for Stage A;
+* crops the model was **unsure** about, crops behind **alerts**, and a small random sample, each with a JSON sidecar.
 
 ```bash
-git clone https://github.com/pratikkayal/PlantDoc-Object-Detection-Dataset PlantDoc
-python import_voc.py --images PlantDoc/TRAIN --annotations PlantDoc/TRAIN --mapping plantdoc --out sources/plantdoc
-python import_voc.py --images PlantDoc/TEST  --annotations PlantDoc/TEST  --mapping plantdoc --out sources/plantdoc-test
+ssh pi@<pi> /opt/plant-cam/venv/bin/python -m plant_cam export-al --config /etc/plant-cam/config.yaml --out ~/al
+scp -r pi@<pi>:al/ unlabelled/
 ```
 
-**Read the summary it prints.** It shows which PlantDoc class went into
-which VERT class (for example "Tomato leaf yellow virus → chlorosis"). If a
-mapping is wrong for your crops, edit `_PLANTDOC_RULES` in `import_voc.py`.
+Aim for a few hundred photos across the day and the season, and photograph
+sick plants deliberately: real disease examples are the rarest and most
+valuable data. Older XIAO-camera uploads: `python pull_frames.py`.
 
-PlantDoc has no insects. For the `pest` class, add an insect detection
-set in VOC format, such as the detection subset of IP102:
+## 2. Label (Label Studio)
 
 ```bash
-python import_voc.py --images IP102/JPEGImages --annotations IP102/Annotations --mapping pest --out sources/ip102
+pip install label-studio && label-studio start --port 8090    # :8080 is VERT's gateway
+python labelstudio.py config > labelling.xml                    # paste into Settings > Labeling Interface > Code
 ```
 
-Roboflow Universe also has many small greenhouse-pest sets (whitefly,
-aphid, thrips). Export them as "Pascal VOC" and import them the same way.
+One box per object, one label each. A condition or ripeness label
+implies its object (`powdery_mildew_leaf` is a leaf, `fruit_ripe` is a
+fruit), so one pass trains both stages. Label healthy leaves
+`healthy_leaf`. Write your rules down (e.g. "a leaf with >2 purple spots
+is common_leaf_spot") and stick to them: inconsistent labels hurt more
+than fewer labels. Active-learning crops can be imported with their
+prediction as a pre-annotation: `python labelstudio.py tasks --al unlabelled/al > tasks.json`.
 
-### More public data from Kaggle
-
-Two more Kaggle datasets are supported. The notebook downloads and imports
-both automatically; each one can be switched off in its settings cell.
+Export as JSON, then:
 
 ```bash
-kaggle datasets download usmanafzaal/strawberry-disease-detection-dataset -p raw/strawberry --unzip
-python import_labelme.py --root raw/strawberry --mapping strawberry --out sources/strawberry
-
-kaggle datasets download lavaman151/plantifydr-dataset -p raw/plantifydr --unzip
-python import_classified.py --root raw/plantifydr --out sources/plantifydr --per-class 400
+python labelstudio.py convert --export export.json --images unlabelled/ --out datasets/own
 ```
 
-- **Strawberry Disease Detection** (about 2,500 real-field photos, LabelMe outlines). Each outline traces a single lesion, but VERT boxes whole leaves, so nearby lesions of the same disease are merged into one box. The fruit and flower diseases are mapped to the closest VERT class; edit `STRAWBERRY_MAP` to change that. One caveat: healthy leaves in these photos aren't labelled, so the model sees them as background. If `healthy_leaf` scores drop after adding this set, that's the cause.
-- **PlantifyDr** (about 125k photos sorted into one folder per disease, with no boxes). The box is drawn automatically around the leaf, and the notebook shows a sample so you can check. Only `--per-class` photos per VERT class are kept, because these are close-ups of single leaves on plain backgrounds. The source is marked **train-only**: it ships pre-augmented copies, so it is never used to score the model.
+Photos are split train/val/test by photo (never crops of one photo across
+splits). `datasets/own/eval/` holds the test photos and their ground
+truth, which is what the Pi-side evaluation in step 5 uses.
 
-> **Be realistic about public data.** It gets you a model that runs and
-> roughly works. Your own photos are what make it accurate. Public photos
-> differ from your greenhouse in crop, lighting, camera and distance.
+## 3. (Optional) Pre-train on public data
 
-## Step 2: Collect your own photos
-
-There are two sources, and the second is better:
+Read [DATASETS.md](DATASETS.md) first; these are non-commercial or unclear.
 
 ```bash
-# Backlog the XIAO camera already uploaded (MinIO must be running):
-python pull_frames.py --out unlabelled/ --device xiao-esp-32-s3 --every 10
-
-# Photos from the Pi itself (same camera and angle the model will see).
-# plant-cam saves one every 10 minutes by default:
-scp -r pi@<pi-ip>:/var/lib/plant-cam/dataset/ unlabelled/
+python import_public.py afzaal --root raw/strawberry --out datasets/afzaal   # Kaggle usmanafzaal/strawberry-disease-detection-dataset
+python import_public.py strawdi --root raw/StrawDI_Db1 --out datasets/strawdi
 ```
 
-What to aim for:
-- **At least 150–300 boxes per class** for a usable first model, and 1,000+ for a good one.
-- Photos across the whole day (morning, noon, evening, cloudy), because lighting changes more than anything else.
-- When a plant does get sick, **photograph it deliberately**: closer, from several angles, every day as it develops. Real disease examples are the rarest and most valuable data you'll have.
-- Keep some photos with no problems in them. The model needs to learn what "nothing wrong" looks like too.
+Merge class folders/annotations as you see fit, but always **validate and
+test on your own photos**: public images differ in camera, light, distance
+and variety, and a score on them says little about your greenhouse.
 
-## Step 3: Label
-
-Use **Label Studio**. It's free and runs locally:
+## 4. Train
 
 ```bash
-pip install label-studio
-label-studio start            # opens http://localhost:8080 -- stop VERT's gateway first, or use --port 8090
+python train_classifier.py --data datasets/own/stage_b_leaf  --group stage_b_leaf  --name strawberry-leaf-v1
+python train_classifier.py --data datasets/own/stage_b_fruit --group stage_b_fruit --name strawberry-fruit-v1
+python train_detector.py   --data datasets/own/objects --name strawberry-detector-v1
 ```
 
-1. Create a project. Under Settings → Labeling Interface → Code, paste the output of `python labelstudio_config.py`.
-2. Import the images from `unlabelled/`.
-3. Draw a box around **each leaf** you can judge, labelled `healthy_leaf` or with its problem. Draw a box around each pest, or each patch of pest damage. Skip leaves that are blurry or mostly hidden.
-4. Be consistent. Decide on rules once (for example: "a leaf more than 30% yellow is chlorosis") and write them down. Inconsistent labels hurt more than having fewer labels.
-5. Export in **YOLO** format and unzip it into `sources/own/`. It should contain `images/`, `labels/` and `classes.txt`.
+Each prints and saves (`runs/<name>/report.json`) per-class precision and
+recall on the held-out test split. Rough guide: a class under ~30 labelled
+examples, or with recall < 0.5, isn't ready to alert on. Get more examples
+of it, starting with the active-learning crops where the model was wrong.
 
-To speed this up after the first model exists: in Label Studio, import the
-model's predictions as pre-annotations and only fix what's wrong. This is
-usually 3–5× faster than labelling from scratch.
-
-## Step 4: Build the dataset
+## 5. Export, check on the Pi, deploy
 
 ```bash
-python build_dataset.py --sources sources --out datasets/vert-plant
+python export.py --checkpoint runs/strawberry-leaf-v1/best.pt --version v1
+scp -r exported/strawberry-leaf-v1-20261020 pi@<pi>:~/
 ```
 
-This merges every folder under `sources/` and remaps class ids by name.
-When `sources/own` exists, **validation and test images come only from
-your own photos**, so the score you see reflects your greenhouse rather
-than PlantDoc. Your training photos are also repeated 2× so they aren't
-drowned out by thousands of public ones. It warns you about any class
-with too few examples.
+On the Pi:
+```bash
+# measured precision/recall on your held-out photos, with the new model
+mkdir -p /tmp/m/strawberry-leaf && cp -r ~/strawberry-leaf-v1-20261020 /tmp/m/strawberry-leaf/current
+PLANTCAM__MODELS_DIR=/tmp/m /opt/plant-cam/venv/bin/python -m plant_cam evaluate \
+    --config /etc/plant-cam/config.yaml --labels ~/eval --json ~/eval-v1.json
+# latency
+/opt/plant-cam/venv/bin/python tools/bench_models.py ~/strawberry-leaf-v1-20261020/model.onnx --batch 8
+# switch to it (atomic; previous versions stay for rollback)
+sudo /opt/plant-cam/deploy/deploy-model.sh ~/strawberry-leaf-v1-20261020
+journalctl -u plant-cam -n 30 | grep "model loaded"
+```
 
-## Step 5: Train
+Ship a new version only if it beats the current one on the same eval set.
+Every reading carries `model_version`, so the dashboard charts show when
+a model changed. Rollback = `deploy-model.sh` with the previous folder in
+`/opt/plant-cam/models/<slot>/`.
+
+### Faster: LiteRT INT8
+
+On a Pi 4, LiteRT's INT8 kernels ran ~2.6x faster than ONNX Runtime FP32
+on the same model (docs/BENCHMARKS.md). If the training machine has
+TensorFlow (Colab does): `pip install onnx2tf onnx_graphsurgeon sng4onnx`, then
 
 ```bash
-python train.py --data datasets/vert-plant/data.yaml --name plant-v1
+python export.py --checkpoint runs/strawberry-leaf-v1/best.pt --version v1 --tflite-int8 datasets/own/stage_b_leaf/val
+cd exported/strawberry-leaf-v1-*/ && mv meta.tflite.json meta.json      # use the .tflite
 ```
 
-This takes about 20–60 min on a T4 GPU. Training stops on its own once
-validation accuracy stops improving (`patience=30`). The augmentations are
-tuned for a fixed greenhouse camera: strong brightness and saturation
-changes (lighting varies), but only tiny hue shifts, because green versus
-yellow is exactly what the model has to tell apart.
+and on the Pi: `/opt/plant-cam/venv/bin/pip install ai-edge-litert`.
+Evaluate it as above: INT8 can cost accuracy on some classes.
 
-## Step 6: Check it before you ship it
+> Status: plant-cam's LiteRT backend is tested on the Pi with a real INT8
+> `.tflite` (uint8 NHWC input, XNNPACK). The `--tflite-int8` *conversion*
+> step has **not** been run yet: TensorFlow wouldn't install on the Pi used
+> for development. Run it once on Colab and check the result with
+> `plant_cam evaluate` before relying on it.
 
-`train.py` finishes by scoring the **held-out test split** and printing
-per-class AP50. As a rough guide:
+## Tested
 
-| AP50 on your own test photos | Meaning |
-|---|---|
-| > 0.7 | Good. Ship it. |
-| 0.5–0.7 | Usable, since the Pi smooths readings over 5 analyses. Keep labelling. |
-| < 0.5 | That class needs more or cleaner labels before it can be trusted. |
-
-Also open the run's `confusion_matrix.png`. The most common problem is
-`chlorosis` being confused with `healthy_leaf` in warm evening light. The
-fix is more evening photos, not more epochs.
-
-Look at real predictions too, not just numbers:
-
-```bash
-yolo predict model=runs/plant-v1/weights/best.pt source=datasets/vert-plant/images/test imgsz=320
-```
-
-## Step 7: Export to TFLite INT8
-
-```bash
-python export.py --weights runs/plant-v1/weights/best.pt --data datasets/vert-plant/data.yaml --version plant-v1
-```
-
-This creates `exported/plant-v1-<date>/` containing `model.tflite` (about
-3 MB) and `meta.json`. `meta.json` holds the class list, weights and
-grower-facing notes copied from `classes.yaml`. The Pi reads those to turn
-detections into a health score, so **retraining never needs a code change
-on the Pi.**
-
-INT8 usually costs about 1–2 points of mAP compared with the full model.
-If a class gets noticeably worse, export with `--precision fp16` instead.
-It's about 2× slower on the Pi but still well within budget.
-
-## Step 8: Deploy to the Pi
-
-```bash
-scp -r exported/plant-v1-20261002 pi@<pi-ip>:~/
-ssh pi@<pi-ip>
-
-# Benchmark on real photos first: shows latency and what it detects
-/opt/plant-cam/venv/bin/python -m plant_cam.bench \
-    --model-dir ~/plant-v1-20261002 --images /var/lib/plant-cam/dataset --out ~/bench-out
-
-# Switch to it (atomic; old versions are kept)
-sudo /opt/plant-cam/deploy/deploy-model.sh ~/plant-v1-20261002
-journalctl -u plant-cam -n 20      # should say: model plant-v1-20261002 loaded
-```
-
-**Rollback:** run `deploy-model.sh` again with the previous version's
-folder in `/opt/plant-cam/models/`. Every reading carries
-`model_version`, so you can compare models on the dashboard charts.
-
-## Step 9: Repeat
-
-Every few weeks:
-1. Pull new photos from the Pi (Step 2), especially from days when the dashboard flagged something.
-2. Label the ones where the model was wrong. These teach it the most.
-3. Rebuild, retrain as `plant-v2`, compare its test score against v1 on the **same** test split, and ship it only if it's better.
+`tests/integration/test_retrain_path.py` runs this whole path (Label Studio
+export -> convert -> train both stages -> export -> deploy -> plant-cam
+loads and runs the models -> `plant_cam evaluate`) on synthetic photos,
+every `make check`.

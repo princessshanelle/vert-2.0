@@ -7,7 +7,8 @@ photo every minute; that backlog is real greenhouse data.
 Photos from the Pi itself are better still (same camera and angle the
 model will see) -- copy those with:
 
-    scp -r pi@<pi-ip>:/var/lib/plant-cam/dataset/ unlabelled/
+    ssh pi@<pi-ip> /opt/plant-cam/venv/bin/python -m plant_cam export-al --config /etc/plant-cam/config.yaml --out ~/al
+    scp -r pi@<pi-ip>:al/ unlabelled/
 """
 from __future__ import annotations
 

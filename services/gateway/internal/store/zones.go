@@ -49,6 +49,22 @@ func (db *DB) ZoneName(ctx context.Context, zoneID string) (string, error) {
 	return name, nil
 }
 
+// DeviceTypeAndZone returns a device's type and the name of the zone it is
+// assigned to ("" if none) -- what the broker's topic check needs to decide
+// whether an AI camera may read its own zone's sensor readings.
+func (db *DB) DeviceTypeAndZone(ctx context.Context, deviceID string) (string, string, error) {
+	var deviceType, zone string
+	row := db.Pool.QueryRow(ctx, `
+		select d.device_type, coalesce(z.name, '')
+		from devices d left join zones z on z.id = d.zone_id
+		where d.id = $1
+	`, deviceID)
+	if err := row.Scan(&deviceType, &zone); err != nil {
+		return "", "", ErrNotFound
+	}
+	return deviceType, zone, nil
+}
+
 func (db *DB) AssignDeviceZone(ctx context.Context, deviceID, zoneID string) error {
 	_, err := db.Pool.Exec(ctx, `update devices set zone_id = $2 where id = $1`, deviceID, zoneID)
 	return err

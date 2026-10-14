@@ -1,0 +1,85 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "plant-cam"
+version = "2.0.0"
+description = "VERT on-device plant-health vision for a Raspberry Pi camera"
+requires-python = ">=3.11"
+# Runtime deps come from Raspberry Pi OS apt packages on the Pi (see
+# deploy/install.sh); this list is what a dev venv needs.
+dependencies = [
+    "numpy>=1.24",
+    "opencv-python-headless>=4.8",
+    "pydantic>=2.5,<3",
+    "pyyaml>=6",
+    "requests>=2.28",
+    "paho-mqtt>=2.0,<3",
+]
+
+[project.optional-dependencies]
+ml = ["onnxruntime>=1.16"]
+dev = ["pytest>=8", "ruff>=0.6", "mypy>=1.10", "types-PyYAML", "types-requests", "onnx>=1.15"]
+
+[project.scripts]
+plant-cam = "plant_cam.__main__:main"
+
+# Third-party analyzers/publishers register here, e.g.
+#   [project.entry-points."plant_cam.analyzers"]
+#   my_analyzer = "my_pkg.module:MyAnalyzer"
+[project.entry-points."plant_cam.analyzers"]
+[project.entry-points."plant_cam.publishers"]
+
+[tool.setuptools.packages.find]
+include = ["plant_cam*"]
+
+[tool.ruff]
+line-length = 120
+target-version = "py311"
+extend-exclude = ["training", ".venv"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B", "UP", "N", "SIM", "RUF", "PL"]
+ignore = [
+    "PLR0913",  # analyzers legitimately take several tuning params
+    "PLR2004",  # thresholds are named in config; literals in tests are fine
+    "PLR0911",
+    "PLR0912",
+    "PLR0915",
+    "RUF012",
+    "PLC0415",  # lazy imports are deliberate: picamera2 is Pi-only, onnxruntime optional
+    "PLR0917",
+]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**" = ["PLC0415", "N802", "N806", "PLW1510", "PLW0108"]
+
+[tool.mypy]
+python_version = "3.11"
+packages = ["plant_cam", "profiles"]
+strict = true
+warn_unreachable = true
+plugins = ["pydantic.mypy"]
+
+[[tool.mypy.overrides]]
+module = ["picamera2.*", "libcamera.*", "onnxruntime.*", "ai_edge_litert.*", "tflite_runtime.*"]
+ignore_missing_imports = true
+
+# OpenCV on the Pi comes from apt without stubs; pip's opencv 5 stubs type
+# every result as a generic Mat. Treat cv2 as untyped everywhere, consistently.
+[[tool.mypy.overrides]]
+module = ["cv2", "cv2.*"]
+follow_imports = "skip"
+follow_untyped_imports = true
+ignore_missing_imports = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+markers = [
+    "integration: needs Docker (starts a throwaway mosquitto)",
+    "e2e: runs against the real VERT stack on this machine (opt-in: make e2e)",
+    "camera: needs the real Pi camera (opt-in)",
+]
+addopts = "-m 'not e2e and not camera'"
+filterwarnings = ["error::DeprecationWarning:plant_cam.*"]

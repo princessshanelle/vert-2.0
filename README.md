@@ -25,8 +25,7 @@ firmware/dht22-node/       ESP32 + DHT22 sample device
 firmware/xiao-esp32s3-camera/  XIAO ESP32-S3 Sense camera sample device
 firmware/soil-moisture-node/   ESP32 + capacitive soil moisture sensor
 firmware/ph-node/          ESP32 + PH-4502C pH module (reservoir water pH)
-edge/plant-cam/            Raspberry Pi camera with on-device plant-health AI
-edge/plant-cam/            Raspberry Pi camera: on-device plant-health detection (YOLO TFLite) + live view, plus its training pipeline
+edge/plant-cam/            Raspberry Pi camera: on-device strawberry plant-health vision (classical CV + two-stage ONNX/LiteRT models, crop profiles) + live view, plus its training pipeline
 scripts/simulate_device.py A pretend sensor, for testing before any hardware exists
 docs/TESTING.md            Full local walkthrough: accounts → provisioning → a rule firing → a photo stored
 ```

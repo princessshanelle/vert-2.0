@@ -1,0 +1,8 @@
+{
+ "counts": {},
+ "boxes": [],
+ "expect": {
+  "yellow_min": 0.1,
+  "conditions": []
+ }
+}

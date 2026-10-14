@@ -268,7 +268,8 @@ pio device monitor
   new one and invalidates the old).
 - **`docker compose up` fails on first run with a connection error from
   gateway or automation.** These retry for about 30 seconds against
-  Postgres/RabbitMQ/MinIO before giving up -- if it's still failing after
+  Postgres/MinIO before giving up (RabbitMQ is retried for as long as
+  the service runs) -- if it's still failing after
   that, check that the `broker`/`postgres`/`minio` containers actually
   reported healthy (`docker compose ps`).
 - **An automation rule never fires.** Confirm the device and the rule

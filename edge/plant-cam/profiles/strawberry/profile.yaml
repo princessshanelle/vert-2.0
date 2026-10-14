@@ -1,0 +1,235 @@
+# Strawberry (Fragaria x ananassa) crop profile.
+#
+# Every threshold here is a conservative STARTING POINT to tune against
+# your own greenhouse -- not agronomic truth. See docs/PROFILES.md for what
+# each one does. Bump `version` whenever you change behaviour: it is
+# published with every reading so charts can be compared across changes.
+
+id: strawberry
+version: 1.0.0
+crop: "Fragaria x ananassa"
+plugins: plugins.py
+
+# Default analysis pipeline (config.yaml `analyzers:` overrides it).
+# Relative model_dir paths resolve against config `models_dir`.
+# Analyzers with no model installed skip themselves; the classical ones
+# always run.
+analyzers:
+  - name: classical
+  - name: detector                       # Stage A: leaf / flower / fruit / runner
+    params:
+      model_dir: strawberry-detector/current
+      labels_key: stage_a
+  - name: classifier                     # Stage B: leaf symptoms (tiles of the canopy if no Stage A model)
+    id: leaf_classifier
+    params:
+      model_dir: strawberry-leaf/current
+      labels_key: stage_b_leaf
+      targets: [leaf]
+      fallback_tiles: true
+  - name: classifier                     # Stage B: fruit ripeness + fruit diseases
+    id: fruit_classifier
+    params:
+      model_dir: strawberry-fruit/current
+      labels_key: stage_b_fruit
+      targets: [fruit]
+      fallback_tiles: false
+      healthy_labels: [background]
+      ripeness_labels: [fruit_green, fruit_white, fruit_turning, fruit_ripe, fruit_overripe]
+  - name: classifier                     # Stage B: flowers
+    id: flower_classifier
+    params:
+      model_dir: strawberry-flower/current
+      labels_key: stage_b_flower
+      targets: [flower]
+      fallback_tiles: false
+  - name: strawberry_fruit               # phenology: counts from models, else the classical colour baseline
+
+# Model label vocabularies. A model whose meta.json labels aren't a subset
+# of these is refused at load (so a mislabelled model can't silently mean
+# something else).
+labels:
+  stage_a: [leaf, flower, fruit, runner]
+  stage_b_leaf:
+    - healthy_leaf
+    - background
+    - powdery_mildew_leaf
+    - common_leaf_spot
+    - leaf_scorch
+    - angular_leaf_spot
+    - uniform_yellowing
+    - interveinal_chlorosis
+    - interveinal_chlorosis_reddening
+    - marginal_scorch
+    - tip_burn
+    - spider_mite_damage
+    - aphid_cluster
+    - slug_damage
+  stage_b_fruit:
+    - background
+    - fruit_green
+    - fruit_white
+    - fruit_turning
+    - fruit_ripe
+    - fruit_overripe
+    - grey_mould_fruit
+    - anthracnose_fruit
+    - powdery_mildew_fruit
+    - thrips_bronzing_fruit
+    - deformed_fruit
+  stage_b_flower: [healthy_flower, background, blossom_blight, grey_mould_flower]
+
+# Stage C: a condition fires (cond_<id>_active = 1, alerts) only after it is
+# seen in `activate_after` consecutive analyses, and clears after
+# `clear_after` consecutive misses.
+persistence:
+  activate_after: 3
+  clear_after: 2
+
+scoring:
+  thriving: 0.85
+  steady: 0.65
+  stressed: 0.45
+  env_weight: 0.25        # how much environmental disease pressure lowers health_score
+  yellow_weight: 0.5      # canopy yellow share counts this much against the visual score
+  brown_weight: 0.8
+  min_canopy_pct: 2.0
+
+# Conditions. Signals are Stage B classifier labels. Colour statistics
+# (classical analyzer) never produce signals -- strawberry leaves redden
+# from cold, age and variety, so red alone must never raise a disease.
+# Nutrient findings are capped at "suspected" and need a corroborating
+# canopy metric.
+conditions:
+  - id: powdery_mildew
+    kind: disease
+    signals: [powdery_mildew_leaf, powdery_mildew_fruit]
+    suspect_at: 0.45
+    detect_at: 0.75
+    severity: 0.5
+    note: "Possible powdery mildew (white powdery patches, upward-curling leaves). Check leaf undersides; improve airflow and avoid overhead watering."
+  - id: common_leaf_spot
+    kind: disease
+    signals: [common_leaf_spot]
+    severity: 0.35
+    note: "Possible common leaf spot (small purple spots with pale centres). Remove badly spotted leaves and keep foliage dry."
+  - id: leaf_scorch
+    kind: disease
+    signals: [leaf_scorch]
+    severity: 0.4
+    note: "Possible leaf scorch (irregular dark purple blotches without pale centres). Remove affected leaves; avoid wetting foliage."
+  - id: angular_leaf_spot
+    kind: disease
+    signals: [angular_leaf_spot]
+    severity: 0.5
+    note: "Possible angular leaf spot (water-soaked angular lesions between veins) -- bacterial and spreads by splashing water. Isolate affected plants and confirm before treating."
+  - id: grey_mould
+    kind: disease
+    signals: [grey_mould_fruit, grey_mould_flower]
+    suspect_at: 0.45
+    detect_at: 0.75
+    severity: 0.7
+    note: "Possible grey mould (Botrytis): grey fuzzy growth on fruit or flowers. Remove affected fruit promptly and lower humidity."
+  - id: anthracnose
+    kind: disease
+    signals: [anthracnose_fruit]
+    severity: 0.7
+    note: "Possible anthracnose (sunken dark round lesions on fruit). Remove affected fruit and check nearby plants."
+  - id: blossom_blight
+    kind: disease
+    signals: [blossom_blight]
+    severity: 0.4
+    note: "Browned, dried flowers seen -- possible blossom blight or frost/heat damage."
+  - id: nitrogen_deficiency
+    kind: nutrient
+    signals: [uniform_yellowing]
+    max_status: suspected
+    min_count: 2
+    severity: 0.25
+    corroborate: [{metric: yellow_ratio, op: ">=", value: 0.05}]
+    note: "Older leaves look evenly yellow -- nitrogen shortfall suspected. Confirm with a feed/EC check before changing nutrition."
+  - id: iron_deficiency
+    kind: nutrient
+    signals: [interveinal_chlorosis]
+    max_status: suspected
+    min_count: 2
+    severity: 0.25
+    corroborate: [{metric: yellow_ratio, op: ">=", value: 0.03}]
+    note: "Yellowing between green veins -- iron shortage suspected (common when substrate pH runs high). Check pH first."
+  - id: magnesium_deficiency
+    kind: nutrient
+    signals: [interveinal_chlorosis_reddening]
+    max_status: suspected
+    min_count: 2
+    severity: 0.25
+    note: "Interveinal yellowing with reddening on older leaves -- magnesium shortage suspected. Confirm before adjusting the feed."
+  - id: potassium_deficiency
+    kind: nutrient
+    signals: [marginal_scorch]
+    max_status: suspected
+    min_count: 2
+    severity: 0.25
+    corroborate: [{metric: brown_ratio, op: ">=", value: 0.02}]
+    note: "Scorched leaf edges on older leaves -- potassium shortage suspected (also caused by salt build-up or drought)."
+  - id: calcium_deficiency
+    kind: nutrient
+    signals: [tip_burn, deformed_fruit]
+    max_status: suspected
+    min_count: 2
+    severity: 0.25
+    note: "Tip burn on young leaves or misshapen fruit -- calcium uptake problem suspected (often humidity/transpiration, not supply)."
+  - id: spider_mites
+    kind: pest
+    signals: [spider_mite_damage]
+    severity: 0.5
+    note: "Stippling/bronzing that looks like spider mite damage. Check leaf undersides with a hand lens for mites and webbing."
+  - id: thrips
+    kind: pest
+    signals: [thrips_bronzing_fruit]
+    severity: 0.3
+    note: "Bronzed fruit surface -- possible thrips feeding. Check flowers for thrips."
+  - id: aphids
+    kind: pest
+    signals: [aphid_cluster]
+    severity: 0.3
+    note: "Possible aphid clusters. Check young leaves and stems."
+  - id: slugs
+    kind: pest
+    signals: [slug_damage]
+    severity: 0.2
+    note: "Ragged holes like slug feeding. Check around the crowns at night."
+
+# Stage D: environmental disease pressure from the zone's sensors.
+# Hours in the last `window_h` meeting the conditions, ramped 0 -> 1
+# between onset_h and full_h. Conservative defaults; tune them.
+risk_indices:
+  botrytis:
+    window_h: 24
+    temp_c: [15, 25]
+    rh_pct: [90, 101]
+    wet: or               # humid OR wet leaves
+    onset_h: 4
+    full_h: 12
+    note: "Long humid or wet spells at mild temperatures favour grey mould (Botrytis). Ventilate and avoid wetting plants."
+  powdery_mildew:
+    window_h: 24
+    temp_c: [15, 27]
+    rh_pct: [75, 95]
+    wet: excluded         # high humidity WITHOUT free water
+    onset_h: 6
+    full_h: 18
+    note: "Warm, humid but dry-leaf conditions favour powdery mildew. Improve airflow."
+
+wetness:
+  rh_min: 95
+  dewpoint_spread_c: 1.0
+  leaf_wetness_min: 50
+
+notes:
+  thriving: "Plants look healthy and vigorous -- nothing needs attention."
+  steady: "Looking alright overall. Nothing here calls for action right now."
+  stressed: "Some signs of stress in view. Worth a closer look when you have a moment."
+  needs_attention: "Several warning signs together -- please check the plants soon."
+  too_dark: "Too dark (or too harsh) to judge plant colour right now -- this will update when the light improves."
+  no_plants: "Couldn't make out any plants in view -- check the camera is still pointed at them."
+  red_tint: "Some leaves look reddish. On strawberries that's often cold, age or variety -- not a disease by itself."

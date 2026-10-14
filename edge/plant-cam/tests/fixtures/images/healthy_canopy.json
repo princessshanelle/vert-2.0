@@ -1,0 +1,10 @@
+{
+ "counts": {},
+ "boxes": [],
+ "expect": {
+  "canopy_min": 25,
+  "yellow_max": 0.03,
+  "conditions": [],
+  "fruit_total": 0
+ }
+}

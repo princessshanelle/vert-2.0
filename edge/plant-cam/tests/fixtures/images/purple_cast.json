@@ -1,0 +1,101 @@
+{
+ "counts": {
+  "fruit_ripe_count": 3,
+  "fruit_turning_count": 2,
+  "fruit_white_count": 1,
+  "fruit_overripe_count": 1,
+  "flower_count": 2
+ },
+ "boxes": [
+  {
+   "label": "fruit_ripe",
+   "box": [
+    0.0895,
+    0.821,
+    0.142,
+    0.892
+   ]
+  },
+  {
+   "label": "fruit_ripe",
+   "box": [
+    0.2284,
+    0.8519,
+    0.2809,
+    0.9228
+   ]
+  },
+  {
+   "label": "fruit_ripe",
+   "box": [
+    0.8611,
+    0.821,
+    0.9136,
+    0.892
+   ]
+  },
+  {
+   "label": "fruit_turning",
+   "box": [
+    0.375,
+    0.8313,
+    0.4275,
+    0.9023
+   ]
+  },
+  {
+   "label": "fruit_turning",
+   "box": [
+    0.7145,
+    0.8621,
+    0.767,
+    0.9331
+   ]
+  },
+  {
+   "label": "fruit_white",
+   "box": [
+    0.5139,
+    0.8416,
+    0.5664,
+    0.9126
+   ]
+  },
+  {
+   "label": "fruit_overripe",
+   "box": [
+    0.6065,
+    0.8827,
+    0.659,
+    0.9537
+   ]
+  },
+  {
+   "label": "flower",
+   "box": [
+    0.2901,
+    0.0473,
+    0.358,
+    0.1379
+   ]
+  },
+  {
+   "label": "flower",
+   "box": [
+    0.7377,
+    0.0679,
+    0.8056,
+    0.1584
+   ]
+  }
+ ],
+ "expect": {
+  "conditions": []
+ },
+ "reference_roi": [
+  0.9297839506172839,
+  0.0257201646090535,
+  0.9837962962962963,
+  0.09773662551440329
+ ]
+}

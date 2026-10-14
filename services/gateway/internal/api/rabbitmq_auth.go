@@ -1,8 +1,11 @@
 package api
 
 import (
+	"context"
 	"net/http"
 	"strings"
+	"sync"
+	"time"
 
 	"github.com/vert-project/gateway/internal/store"
 )
@@ -25,7 +28,31 @@ import (
 // Contract reference: https://github.com/rabbitmq/rabbitmq-auth-backend-http
 type RabbitMQAuthHandler struct {
 	DB *store.DB
+	// Zones answers "what type is this device, and which zone is it in?"
+	// for the one cross-device permission below. *store.DB implements it;
+	// tests substitute a fake. Nil disables that permission entirely.
+	Zones deviceZoneLookup
+
+	cacheMu sync.Mutex
+	cache   map[string]zoneCacheEntry
 }
+
+type deviceZoneLookup interface {
+	DeviceTypeAndZone(ctx context.Context, deviceID string) (deviceType, zone string, err error)
+}
+
+type zoneCacheEntry struct {
+	deviceType, zone string
+	expires          time.Time
+}
+
+// zoneReaderTypes are device types allowed to READ (never write) the
+// `reading` topics of other devices in their own zone. An on-device AI
+// camera (edge/plant-cam) uses the zone's temperature/humidity to judge
+// disease pressure; it still can't publish as, or command, anything else.
+var zoneReaderTypes = map[string]bool{"ai-camera": true}
+
+const zoneCacheTTL = 60 * time.Second
 
 func allow(w http.ResponseWriter) {
 	w.Write([]byte("allow"))
@@ -85,7 +112,8 @@ func (h *RabbitMQAuthHandler) Resource(w http.ResponseWriter, r *http.Request) {
 }
 
 // Topic: the routing key's device_id segment must match the
-// authenticated username. Routing keys follow
+// authenticated username -- with one read-only exception, see
+// mayReadZoneReadings. Routing keys follow
 // vert.<zone>.<device_type>.<device_id>.<kind> (RabbitMQ's MQTT
 // plugin converts the "/" a device used over MQTT into "." here), so
 // this is a pure string check -- no database round trip on the hot path
@@ -100,9 +128,55 @@ func (h *RabbitMQAuthHandler) Topic(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	segments := strings.Split(routingKey, ".")
-	if len(segments) < 4 || segments[0] != "vert" || segments[3] != username {
+	if len(segments) < 4 || segments[0] != "vert" {
 		deny(w)
 		return
 	}
-	allow(w)
+	if segments[3] == username {
+		allow(w)
+		return
+	}
+	if r.FormValue("permission") == "read" && h.mayReadZoneReadings(r.Context(), username, segments) {
+		allow(w)
+		return
+	}
+	deny(w)
+}
+
+// mayReadZoneReadings: vert.<zone>.<type>.<id>.reading, where <zone> is the
+// caller's own (concrete, not wildcarded) zone and the caller is a zone
+// reader type. The answer is cached briefly: RabbitMQ asks on every
+// subscribe, and a zone reassignment taking a minute to apply is fine.
+func (h *RabbitMQAuthHandler) mayReadZoneReadings(ctx context.Context, username string, segments []string) bool {
+	if h.Zones == nil || len(segments) != 5 || segments[4] != "reading" {
+		return false
+	}
+	zone := segments[1]
+	if zone == "" || zone == "*" || zone == "#" {
+		return false
+	}
+	deviceType, deviceZone, ok := h.lookup(ctx, username)
+	return ok && zoneReaderTypes[deviceType] && deviceZone != "" && deviceZone == zone
+}
+
+func (h *RabbitMQAuthHandler) lookup(ctx context.Context, deviceID string) (string, string, bool) {
+	now := time.Now()
+	h.cacheMu.Lock()
+	if e, ok := h.cache[deviceID]; ok && now.Before(e.expires) {
+		h.cacheMu.Unlock()
+		return e.deviceType, e.zone, true
+	}
+	h.cacheMu.Unlock()
+
+	deviceType, zone, err := h.Zones.DeviceTypeAndZone(ctx, deviceID)
+	if err != nil {
+		return "", "", false
+	}
+	h.cacheMu.Lock()
+	if h.cache == nil {
+		h.cache = make(map[string]zoneCacheEntry)
+	}
+	h.cache[deviceID] = zoneCacheEntry{deviceType: deviceType, zone: zone, expires: now.Add(zoneCacheTTL)}
+	h.cacheMu.Unlock()
+	return deviceType, zone, true
 }

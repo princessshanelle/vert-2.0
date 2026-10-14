@@ -1,7 +1,12 @@
-# Training machine (Linux / WSL2 / Colab with a GPU ideally), not the Pi.
-# Ultralytics installs PyTorch; TensorFlow + onnx2tf for the TFLite export
-# are pulled in automatically the first time export.py runs.
-ultralytics>=8.3
+# Training machine (GPU / Colab ideally). All permissive licences:
+# torchvision models (BSD-3), ONNX Runtime (MIT). No Ultralytics (AGPL-3.0).
+torch>=2.2
+torchvision>=0.17
+onnx>=1.15
+onnxruntime>=1.16
 pyyaml
 pillow
-minio
+numpy
+minio          # pull_frames.py only
+# Optional, for export.py --tflite-int8 (needs TensorFlow, e.g. on Colab):
+#   onnx2tf onnx_graphsurgeon sng4onnx

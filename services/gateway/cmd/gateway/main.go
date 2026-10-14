@@ -108,8 +108,17 @@ func runMessaging(ctx context.Context, cfg config.Config, db *store.DB, tsdb *ti
 			return mq.Connect(cfg.AMQPURL)
 		})
 		if err != nil {
-			log.Printf("mq: giving up on rabbitmq for now: %v", err)
-			return
+			// Never give up: returning here left the process alive (so the
+			// container restart policy never fired) but deaf to every device
+			// until someone restarted it by hand. A RabbitMQ restart can
+			// take longer than the 30 s connectWithRetry allows.
+			log.Printf("mq: rabbitmq still unreachable, will keep trying: %v", err)
+			select {
+			case <-ctx.Done():
+				return
+			case <-time.After(10 * time.Second):
+			}
+			continue
 		}
 
 		if err := mq.DeclareTopology(conn); err != nil {
@@ -130,8 +139,12 @@ func runMessaging(ctx context.Context, cfg config.Config, db *store.DB, tsdb *ti
 		conn.NotifyClose(closed)
 
 		consumerCtx, stopConsumers := context.WithCancel(ctx)
-		go mq.RunTelemetryConsumer(consumerCtx, conn, db, tsdb, hub)
-		go mq.RunLifecycleConsumer(consumerCtx, conn, db)
+		// A consumer can also stop on its own while the connection stays
+		// up (its channel closed by the broker, say). Closing the
+		// connection then sends us round the reconnect loop below instead
+		// of leaving that consumer silently gone.
+		go func() { mq.RunTelemetryConsumer(consumerCtx, conn, db, tsdb, hub); conn.Close() }()
+		go func() { mq.RunLifecycleConsumer(consumerCtx, conn, db); conn.Close() }()
 
 		log.Println("mq: connected, consuming telemetry and lifecycle events")
 
@@ -142,7 +155,11 @@ func runMessaging(ctx context.Context, cfg config.Config, db *store.DB, tsdb *ti
 			return
 		case amqpErr := <-closed:
 			stopConsumers()
-			log.Printf("mq: connection to rabbitmq lost, reconnecting: %v", amqpErr)
+			if amqpErr == nil {
+				log.Println("mq: a consumer stopped, reconnecting")
+			} else {
+				log.Printf("mq: connection to rabbitmq lost, reconnecting: %v", amqpErr)
+			}
 		}
 	}
 }

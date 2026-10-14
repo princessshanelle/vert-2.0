@@ -65,22 +65,38 @@ services:
       retries: 10
 
   minio:
-    # Docker Hub stopped serving minio/minio entirely as of 2026-09-11 --
-    # MinIO now publishes exclusively to their own registry. Same image,
-    # same tag scheme, just a different host.
-    image: quay.io/minio/minio:RELEASE.2025-09-07T16-13-09Z
+    # MinIO's distribution keeps moving and each move has broken this
+    # file: Docker Hub stopped serving minio/minio entirely on
+    # 2026-09-11, then quay.io/minio/minio itself started returning 401
+    # for anonymous pulls around 2026-09-28. The obvious next step,
+    # quay.io/minio/aistor/minio, pulls fine but is a licensed product --
+    # it starts, then refuses every S3 operation with "No valid license
+    # found" until you pay for one. bitnamilegacy/minio is the one that
+    # actually works unauthenticated with no license gate, confirmed
+    # 2026-10-08 -- but it's an explicitly frozen, unmaintained mirror
+    # (Bitnami stopped updating "legacy" images), so this is a stopgap,
+    # not a destination. See SESSION_HANDOFF.md for the full trail if
+    # this breaks again.
+    #
+    # Two real differences from the official image this replaced:
+    # Bitnami's entrypoint starts the server itself from env vars (no
+    # `command:` needed, and don't add one back), and it writes to
+    # /bitnami/minio/data, not /data.
+    image: bitnamilegacy/minio:2025.7.23-debian-12-r5
     restart: unless-stopped
-    command: server /data --console-address ":9001"
     environment:
       MINIO_ROOT_USER: vert_minio_admin
       MINIO_ROOT_PASSWORD: vert_minio_dev_password
     volumes:
-      - minio_data:/data
+      - minio_data:/bitnami/minio/data
     ports:
       - "9000:9000" # S3 API
       - "9001:9001" # web console -- http://localhost:9001
     healthcheck:
-      test: ["CMD", "mc", "ready", "local"]
+      # Not `mc ready local`: this image doesn't bundle the mc CLI the
+      # way the official all-in-one image did. A bare TCP probe via
+      # bash's /dev/tcp needs nothing extra installed in the image.
+      test: ["CMD", "bash", "-c", "echo > /dev/tcp/127.0.0.1/9000"]
       interval: 5s
       timeout: 5s
       retries: 10

@@ -1,0 +1,9 @@
+{
+ "counts": {},
+ "boxes": [],
+ "expect": {
+  "fruit_total": 0,
+  "conditions": [],
+  "red_leaf_min": 0.05
+ }
+}

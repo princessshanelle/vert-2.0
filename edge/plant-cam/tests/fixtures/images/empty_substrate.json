@@ -1,0 +1,9 @@
+{
+ "counts": {},
+ "boxes": [],
+ "expect": {
+  "canopy_max": 2.0,
+  "label": "steady",
+  "fruit_total": 0
+ }
+}

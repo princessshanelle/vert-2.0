@@ -36,7 +36,7 @@ func NewRouter(db *store.DB, tsdb *timeseries.DB, objects *storage.ObjectStore, 
 	remindersH := &RemindersHandler{DB: db}
 	readingsH := &ReadingsHandler{TS: tsdb}
 	commandH := &CommandHandler{DB: db, Commander: commander}
-	rmqAuthH := &RabbitMQAuthHandler{DB: db}
+	rmqAuthH := &RabbitMQAuthHandler{DB: db, Zones: db}
 	wsH := &WSHandler{Hub: hub, JWTSecret: cfg.JWTSecret}
 
 	r.Route("/api/v1", func(r chi.Router) {

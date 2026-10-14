@@ -1,58 +1,99 @@
-# Copy to /etc/plant-cam/config.yaml on the Pi (or ./config.yaml on a dev
-# laptop) and fill in the first three sections. Everything below them has
-# sensible defaults and can be deleted.
+# plant-cam configuration. Copy to /etc/plant-cam/config.yaml on the Pi
+# (install.sh does this) and fill in the first three sections; everything
+# else has a sensible default and can be deleted.
+#
+# The device secret does NOT go here: put it in /etc/plant-cam/secret.env as
+#   VERT_DEVICE_SECRET=...
+# (mode 600; the systemd unit loads it). Any setting can also be
+# overridden from the environment: PLANTCAM__SCHEDULE__INTERVAL_S=300
+#
+# Check it without starting anything:
+#   /opt/plant-cam/venv/bin/python -m plant_cam check-config --config /etc/plant-cam/config.yaml
 
 device:
-  id: plantcam-01              # exactly what you provisioned -- no dots or slashes
-  secret: paste-the-provisioned-secret-here   # or set VERT_DEVICE_SECRET instead
+  id: plantcam-01              # exactly what you provisioned -- no dots, slashes or spaces
   type: ai-camera
   zone: zoneA                  # must match the zone's name in the dashboard
 
 broker:
-  host: 192.168.1.25           # the machine running docker compose
+  host: 127.0.0.1              # the machine running docker compose (this Pi, if it hosts the stack)
   port: 1883
+  # tls: {enabled: true, ca_file: /etc/plant-cam/ca.pem}   # when the broker gets TLS (port 8883)
 
 gateway:
-  url: http://192.168.1.25:8080
+  url: http://127.0.0.1:8080
 
 camera:
-  source: picamera2            # picamera2 (Pi) | opencv (USB webcam) | folder (still images)
-  width: 1280
-  height: 720
-  fps: 10
+  source: picamera2            # picamera2 | folder | video
+  main_size: [1296, 972]       # OV5647 binned full field of view; Camera Module 3: [1536, 864]
+  lores_size: [640, 480]       # live view + change detection
+  still_size: [2592, 1944]     # full-sensor still for Stage B crops; null = crop from main
+  fps: 5
   hflip: false
   vflip: false
-  # opencv_index: 0
-  # folder: ./samples
+  awb: locked                  # uses the values `plant_cam calibrate` measured (auto until then)
+  exposure: auto               # "locked" too, if your light is constant (grow lights only, no daylight)
 
-model:
-  dir: /opt/plant-cam/models/current   # symlink to models/<version>/; missing = greenness heuristic
-  score_threshold: 0.35
-  iou_threshold: 0.45
-  num_threads: 3
+schedule:
+  interval_s: 600              # full analysis every 10 min; plant health changes over hours
+  # Analyse only when the light is right for colour (daylight / grow lights off). Local time.
+  windows: []                  # e.g. ["07:00-11:00", "14:00-18:00"]
+  change_detection: true       # plus an extra analysis when the scene changes a lot
 
-analysis:
-  interval_s: 30
-  window: 5                    # readings are smoothed over this many analyses
+# Regions of interest, as fractions of the frame: x1, y1, x2, y2.
+# kinds: canopy (leaf analysis), fruit (fruit/flower counting), reference (grey card).
+# Without ROIs the whole frame is used for everything.
+rois: []
+#  - {name: tray1, box: [0.0, 0.0, 1.0, 0.65], kinds: [canopy]}
+#  - {name: fruit_strip, box: [0.0, 0.65, 1.0, 1.0], kinds: [fruit]}
+#  - {name: card, box: [0.92, 0.02, 0.99, 0.10], kinds: [reference]}
 
-evidence:
-  interval_s: 900              # routine annotated photo to the dashboard gallery
-  on_decline: true             # plus one immediately whenever things get worse
+preprocess:
+  reference_roi: null          # name of a `reference` ROI over a grey card to cancel grow-light colour casts
+
+profile:
+  id: strawberry               # crop profile in /opt/plant-cam/app/profiles/<id>/
+
+models_dir: /opt/plant-cam/models   # model packages; see training/README.md
+
+# null = use the crop profile's analyzer list. To add or tune one:
+# analyzers:
+#   - name: classical
+#     params: {sat_min: 90}
+#   - name: strawberry_fruit
+
+publishers:                    # order matters: snapshot first, so the reading carries image_ref
+  - name: snapshot
+    params: {interval_s: 3600, on_alert: true}
+  - name: mqtt
+
+env:
+  enabled: true                # use the zone's temperature/humidity sensors for disease-pressure indices
+  max_age_s: 900
 
 stream:
-  port: 81                     # the dashboard expects :81/stream
-  max_fps: 10
-  jpeg_quality: 75
-  overlay: true
-  always_on: false
-  idle_timeout_s: 300
+  enabled: true
+  port: 81                     # the dashboard's live view expects :81/stream
+  max_fps: 5
 
-dataset:
-  enabled: true                # raw photos kept locally for labelling -> training
-  dir: /var/lib/plant-cam/dataset
-  interval_s: 600
-  max_files: 5000
+store:
+  dir: /var/lib/plant-cam
+  outbox_max_rows: 2000        # readings held while the broker is unreachable (~2 weeks at 10 min)
+  outbox_max_age_h: 168
 
-spool:
-  path: /var/lib/plant-cam/spool.jsonl
-  max_entries: 5000
+active_learning:
+  enabled: true
+  dir: /var/lib/plant-cam/active-learning
+  max_bytes: 2147483648        # 2 GB
+  max_per_hour: 30
+
+thermal:
+  soft_c: 70                   # >= : analyse half as often, live view 2 fps
+  hard_c: 75                   # >= : skip ML analyzers
+  critical_c: 80               # >= (or under-voltage): classical only, live view off
+
+logging:
+  level: INFO
+  json: true                   # one JSON object per line on stdout -> journald
+
+heartbeat_s: 60
