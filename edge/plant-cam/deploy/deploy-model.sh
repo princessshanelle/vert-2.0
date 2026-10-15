@@ -24,8 +24,10 @@ EOF
 )
 [[ -f "$SRC/$FILE" ]] || { echo "missing $SRC/$FILE (named in meta.json)" >&2; exit 1; }
 
-# Refuse a model the service can't load, before switching to it.
-/opt/plant-cam/venv/bin/python - "$SRC" <<'EOF'
+# Refuse a model the service can't load, before switching to it. The app
+# lives in /opt/plant-cam/app (the service's working directory), not in the
+# venv, so point Python at it: this script may be run from any directory.
+PYTHONPATH=/opt/plant-cam/app /opt/plant-cam/venv/bin/python - "$SRC" <<'EOF'
 import sys
 from pathlib import Path
 from plant_cam.runtime import Model

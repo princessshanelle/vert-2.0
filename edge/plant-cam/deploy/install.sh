@@ -42,6 +42,11 @@ install -m 755 "$SRC/deploy/deploy-model.sh" "$ROOT/deploy/deploy-model.sh"
 if [[ ! -d "$ROOT/venv" ]]; then
   python3 -m venv --system-site-packages "$ROOT/venv"
 fi
+# Make `/opt/plant-cam/venv/bin/python -m plant_cam ...` work from any directory
+# (calibrate, evaluate, export-al in the docs), not only from the service's
+# working directory.
+"$ROOT/venv/bin/python" -c 'import site; print(site.getsitepackages()[0])' \
+  | xargs -I{} sh -c 'echo /opt/plant-cam/app > "{}/plant-cam-app.pth"'
 if [[ $NEED_PIP_ORT == 1 ]]; then
   "$ROOT/venv/bin/pip" install --quiet "onnxruntime>=1.16"
 fi
