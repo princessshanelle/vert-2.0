@@ -106,6 +106,33 @@ function onLiveReading(msg) {
   liveOverlay.value = { ...liveOverlay.value, [msg.metric]: msg.v }
 }
 
+// Switchable devices (pump, grow light): their state is a reading
+// (<kind>_on = 1/0) like any other metric, so it updates live, and
+// On/Off goes out as a command the device answers by reporting its new
+// state. The pump also stops itself after pump_max_run_s.
+const SWITCHES = { pump: 'pump_on', light: 'light_on' }
+const switchMetric = computed(() => SWITCHES[device.value?.device_type] || null)
+const switchState = computed(() => {
+  const m = switchMetric.value
+  if (!m) return null
+  const v = liveOverlay.value[m] ?? device.value?.last_reading?.[m]
+  return typeof v === 'number' ? v > 0 : null
+})
+const switchInfo = computed(() => ({ ...(device.value?.last_reading || {}), ...liveOverlay.value }))
+const switchSending = ref('')
+const switchError = ref('')
+async function sendSwitch(command) {
+  switchSending.value = command
+  switchError.value = ''
+  try {
+    await store.sendCommand(device.value.id, command)
+  } catch (err) {
+    switchError.value = err.response?.status === 409 ? t('switch.no_zone') : t('switch.failed')
+  } finally {
+    setTimeout(() => { switchSending.value = '' }, 1500)
+  }
+}
+
 const sensorReading = computed(() => {
   if (healthReading.value) return null
   if (!device.value?.last_reading) return null
@@ -224,6 +251,28 @@ async function exportCsv() {
 
       <PlantHealthPanel v-if="healthReading" :reading="healthReading" class="card" />
 
+      <section v-if="switchMetric" class="card switch-card">
+        <div class="switch-head">
+          <div>
+            <h2>{{ t(`switch.title_${device.device_type}`) }}</h2>
+            <p class="switch-state">
+              <span class="status-chip" :class="switchState === null ? 'neutral' : switchState ? 'good' : 'neutral'">
+                {{ switchState === null ? t('switch.unknown') : switchState ? t('switch.on') : t('switch.off') }}
+              </span>
+              <span v-if="switchState && switchInfo.pump_run_s" class="muted">{{ t('switch.running_for', { s: switchInfo.pump_run_s }) }}</span>
+            </p>
+          </div>
+          <div v-if="canManage" class="switch-actions">
+            <button class="btn primary" :disabled="!!switchSending || device.status !== 'online'" @click="sendSwitch('on')">{{ t('switch.turn_on') }}</button>
+            <button class="btn" :disabled="!!switchSending || device.status !== 'online'" @click="sendSwitch('off')">{{ t('switch.turn_off') }}</button>
+          </div>
+        </div>
+        <p v-if="device.status !== 'online'" class="muted">{{ t('switch.offline') }}</p>
+        <p v-if="switchError" class="error" role="alert">{{ switchError }}</p>
+        <p v-if="device.device_type === 'pump' && switchInfo.pump_max_run_s" class="muted note">{{ t('switch.pump_limit', { s: switchInfo.pump_max_run_s }) }}</p>
+        <p v-if="switchInfo.pump_backup" class="backup" role="status">{{ t('switch.pump_backup') }}</p>
+      </section>
+
       <section v-else-if="sensorReading" class="card">
         <h2>{{ t('device_detail.latest_reading') }}</h2>
         <div class="stat-grid">
@@ -331,6 +380,12 @@ async function exportCsv() {
   border-radius: 999px; cursor: pointer; font-weight: 600;
 }
 .range-tab.active, .metric-tab.active { background: var(--canopy); border-color: var(--canopy); color: var(--ink-inverse); }
+.switch-head { display: flex; justify-content: space-between; align-items: center; gap: 1rem; flex-wrap: wrap; }
+.switch-head h2 { margin-bottom: 0.4rem; }
+.switch-state { display: flex; align-items: center; gap: 0.6rem; font-size: 0.85rem; }
+.switch-actions { display: flex; gap: 0.5rem; }
+.switch-card .note { font-size: 0.82rem; margin-top: 0.8rem; }
+.switch-card .backup { margin-top: 0.6rem; font-size: 0.88rem; font-weight: 600; color: var(--warning); }
 .stacked { display: flex; flex-direction: column; gap: 0.25rem; }
 .stack-label { font-size: 0.8rem; font-weight: 650; color: var(--ink-2); margin-top: 0.4rem; }
 .live-toggle {

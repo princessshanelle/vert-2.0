@@ -40,7 +40,8 @@
     "ph": "pH sensor",
     "soil-moisture": "Soil moisture",
     "pump": "Water pump",
-    "window": "Window motor"
+    "window": "Window motor",
+    "light": "Grow light"
   },
   "device_detail": {
     "not_found": "We no fit find dis device. E fit be say dem don remove am.",
@@ -378,5 +379,20 @@
     "no_access": "No access",
     "since": "Added {date}",
     "roles_help": "Admin: everything, plus devices and users. Operator: dey run di greenhouse (commands, automation). Viewer: fit look, no fit change anything."
+  },
+  "switch": {
+    "title_pump": "Water pump",
+    "title_light": "Grow light",
+    "on": "E dey on",
+    "off": "E don off",
+    "unknown": "We no sabi",
+    "turn_on": "On am",
+    "turn_off": "Off am",
+    "running_for": "e don run {s} seconds",
+    "offline": "Di device no dey online, so you no fit switch am now.",
+    "failed": "E no send. Check say di device dey online, then try again.",
+    "no_zone": "Put dis device for one zone first (for up), then try again.",
+    "pump_limit": "For safety, di pump go always off by itself after {s} seconds, even if Wi-Fi no dey.",
+    "pump_backup": "Backup watering dey on: di controller no fit reach di Pi, so e dey water by im own soil reading."
   }
 }

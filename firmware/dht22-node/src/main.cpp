@@ -53,7 +53,10 @@ void connectMqtt() {
     // Last-Will: gateway marks the device offline automatically if power
     // is lost without a clean disconnect.
     String willTopic = String("vert/") + ZONE + "/" + DEVICE_TYPE + "/" + DEVICE_ID + "/offline";
-    if (mqtt.connect(DEVICE_ID, DEVICE_ID, DEVICE_SECRET, willTopic.c_str(), 1, true, "1")) {
+    // The gateway's lifecycle consumer reads JSON with "kind" (a bare "1"
+    // was unreadable, so a node that lost power stayed "online" forever).
+    String will = String("{\"kind\":\"offline\",\"device_id\":\"") + DEVICE_ID + "\"}";
+    if (mqtt.connect(DEVICE_ID, DEVICE_ID, DEVICE_SECRET, willTopic.c_str(), 1, false, will.c_str())) {
       Serial.println("MQTT connected");
     } else {
       Serial.printf("MQTT connect failed, rc=%d, retrying...\n", mqtt.state());

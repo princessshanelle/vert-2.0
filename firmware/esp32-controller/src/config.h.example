@@ -1,0 +1,73 @@
+// Copy to config.h and fill in. config.h is gitignored, so Wi-Fi passwords
+// and device secrets never end up committed.
+//
+// This one board is FIVE VERT devices. In the dashboard, as admin, go to
+// Add device and provision each one with exactly this ID and type, then
+// paste the secret it shows (shown once). Put all five in the same zone.
+//
+//   ID (suggested)      Type in "Add device"
+//   climate-01          temp-humidity
+//   soil-01             soil-moisture
+//   ph-01               ph
+//   pump-01             pump
+//   light-01            light
+#pragma once
+
+// ---- Network ---------------------------------------------------------------
+#define WIFI_SSID     "your-greenhouse-wifi"     // 2.4 GHz only: ESP32 has no 5 GHz radio
+#define WIFI_PASSWORD "your-wifi-password"
+
+#define MQTT_HOST "192.168.1.151"                // the Pi running VERT
+#define MQTT_PORT 1883
+#define ZONE      "zoneA"                        // exactly the zone's name in the dashboard
+
+// ---- Devices (from Add device) ----------------------------------------------
+#define CLIMATE_ID     "climate-01"
+#define CLIMATE_SECRET "paste-secret-here"
+#define SOIL_ID        "soil-01"
+#define SOIL_SECRET    "paste-secret-here"
+#define PH_ID          "ph-01"
+#define PH_SECRET      "paste-secret-here"
+#define PUMP_ID        "pump-01"
+#define PUMP_SECRET    "paste-secret-here"
+#define LIGHT_ID       "light-01"
+#define LIGHT_SECRET   "paste-secret-here"
+
+// ---- Pins (30-pin DOIT ESP32 DevKit V1) ---------------------------------------
+// Analog sensors MUST be on ADC1 pins (32, 33, 34, 35, 36=VP, 39=VN): the
+// ADC2 pins (0, 2, 4, 12-15, 25-27) return nothing while Wi-Fi is on.
+#define DHT_PIN 4
+// 1 to 4 soil probes; they're averaged into one moisture value.
+#define SOIL_PINS  {32, 33, 34, 35}
+#define SOIL_COUNT 4
+// pH on VP (GPIO36). If your board has no VP/VN pins, use 3 soil probes
+// (SOIL_PINS {32, 33, 34}, SOIL_COUNT 3) and put pH on 35.
+#define PH_PIN 36
+
+#define PUMP_RELAY_PIN  27
+#define LIGHT_RELAY_PIN 15
+// Most relay boards switch ON when the pin is pulled LOW. If the pump or
+// light runs the wrong way round, change this to false.
+#define RELAY_ACTIVE_LOW true
+
+// ---- Calibration (see README) -----------------------------------------------------------
+// Soil: raw reading with the probe in dry air, and fully in a cup of water.
+#define SOIL_RAW_DRY 3000
+#define SOIL_RAW_WET 1200
+// pH: millivolts in pH 7.0 buffer, and mV per pH unit = (mV at pH 4 - mV at pH 7) / 3.
+#define PH_NEUTRAL_MV  1500.0f
+#define PH_MV_PER_UNIT 180.0f
+
+// ---- Pump safety -------------------------------------------------------------------------
+// The pump always stops after this long, whatever asked for it (a person,
+// a rule, the backup) -- even with no Wi-Fi. Set it to one normal watering.
+#define PUMP_MAX_RUN_S  180
+// Backup watering waits at least this long between runs (rules and people don't).
+#define PUMP_MIN_REST_S 900
+
+// ---- Backup watering when the Pi can't be reached ----------------------------------------
+// After this long without the broker, the board waters by itself: on below
+// BACKUP_SOIL_ON %, off at BACKUP_SOIL_OFF % (or PUMP_MAX_RUN_S, first).
+#define BACKUP_AFTER_S  600
+#define BACKUP_SOIL_ON  30
+#define BACKUP_SOIL_OFF 70

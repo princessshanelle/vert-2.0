@@ -40,7 +40,8 @@
     "ph": "pH sensor",
     "soil-moisture": "Soil moisture",
     "pump": "Water pump",
-    "window": "Window motor"
+    "window": "Window motor",
+    "light": "Grow light"
   },
   "device_detail": {
     "not_found": "We couldn't find that device. It may have been removed.",
@@ -378,5 +379,20 @@
     "no_access": "No access",
     "since": "Added {date}",
     "roles_help": "Admin: everything, including devices and users. Operator: runs the greenhouse (commands, automation). Viewer: can look, can't change anything."
+  },
+  "switch": {
+    "title_pump": "Water pump",
+    "title_light": "Grow light",
+    "on": "On",
+    "off": "Off",
+    "unknown": "State unknown",
+    "turn_on": "Turn on",
+    "turn_off": "Turn off",
+    "running_for": "running for {s} s",
+    "offline": "The device is offline, so it can't be switched right now.",
+    "failed": "Couldn't send that. Check the device is online and try again.",
+    "no_zone": "Put this device in a zone first (above), then try again.",
+    "pump_limit": "For safety the pump always stops by itself after {s} s, even without Wi-Fi.",
+    "pump_backup": "Backup watering is on: the controller lost the Pi and is watering from its own soil readings."
   }
 }

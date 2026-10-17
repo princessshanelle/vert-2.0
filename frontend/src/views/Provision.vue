@@ -13,7 +13,7 @@ const submitting = ref(false)
 const result = ref(null)
 const copied = ref(false)
 
-const deviceTypeOptions = ['temp-humidity', 'soil-moisture', 'ph', 'camera', 'ai-camera', 'pump', 'window']
+const deviceTypeOptions = ['temp-humidity', 'soil-moisture', 'ph', 'camera', 'ai-camera', 'pump', 'light', 'window']
 
 async function submit() {
   error.value = ''

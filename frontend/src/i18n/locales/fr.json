@@ -40,7 +40,8 @@
     "ph": "Capteur de pH",
     "soil-moisture": "Humidité du sol",
     "pump": "Pompe à eau",
-    "window": "Moteur de fenêtre"
+    "window": "Moteur de fenêtre",
+    "light": "Lampe de croissance"
   },
   "device_detail": {
     "not_found": "Nous n'avons pas trouvé cet appareil. Il a peut-être été retiré.",
@@ -378,5 +379,20 @@
     "no_access": "Sans accès",
     "since": "Ajouté le {date}",
     "roles_help": "Admin : tout, y compris appareils et utilisateurs. Opérateur : fait tourner la serre (commandes, automatisation). Observateur : peut regarder, ne peut rien changer."
+  },
+  "switch": {
+    "title_pump": "Pompe à eau",
+    "title_light": "Lampe de croissance",
+    "on": "Allumée",
+    "off": "Éteinte",
+    "unknown": "État inconnu",
+    "turn_on": "Allumer",
+    "turn_off": "Éteindre",
+    "running_for": "en marche depuis {s} s",
+    "offline": "L'appareil est hors ligne et ne peut pas être commandé pour l'instant.",
+    "failed": "Envoi impossible. Vérifiez que l'appareil est en ligne et réessayez.",
+    "no_zone": "Placez d'abord cet appareil dans une zone (ci-dessus), puis réessayez.",
+    "pump_limit": "Par sécurité, la pompe s'arrête toujours d'elle-même après {s} s, même sans Wi-Fi.",
+    "pump_backup": "Arrosage de secours actif : le contrôleur a perdu le Pi et arrose selon ses propres mesures du sol."
   }
 }
