@@ -58,7 +58,10 @@
     "live_view": "Live view",
     "go_live": "Go live",
     "stop_live": "Stop di live view",
-    "live_view_hint": "Go live make you see am now now, or leave am and VERT go still dey take e usual photo every small time."
+    "live_view_hint": "Go live make you see am now now, or leave am and VERT go still dey take e usual photo every small time.",
+    "analyse_now": "Check am now",
+    "analyse_sent": "We don send am. Di camera go check am small time, dis page go refresh for 20 seconds.",
+    "analyse_failed": "We no fit reach di camera. Check say e dey online, then try again."
   },
   "readings": {
     "temp_c": "Temperature (°C)",

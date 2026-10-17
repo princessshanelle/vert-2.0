@@ -55,6 +55,28 @@ const streamUrl = computed(() => {
   const ip = device.value?.local_ip
   return ip ? `http://${ip}:81/stream` : null
 })
+// "Analyse now" (plant camera only): asks plant-cam for an analysis outside
+// its schedule -- handy for testing with a photo held in front of the lens.
+// The reading arrives a few seconds to a minute later; reload then.
+const isPlantCam = computed(() => device.value?.device_type === 'ai-camera')
+const analyseState = ref('') // '' | 'sent' | 'failed'
+let analyseTimer = null
+async function analyseNow() {
+  clearTimeout(analyseTimer)
+  try {
+    await store.sendCommand(device.value.id, 'analyze_now')
+    analyseState.value = 'sent'
+    analyseTimer = setTimeout(async () => {
+      device.value = await store.fetchDevice(route.params.deviceId)
+      liveOverlay.value = {}
+      analyseState.value = ''
+    }, 20000)
+  } catch {
+    analyseState.value = 'failed'
+  }
+}
+onBeforeUnmount(() => clearTimeout(analyseTimer))
+
 async function toggleLive() {
   liveRequested.value = !liveRequested.value
   try {
@@ -248,10 +270,16 @@ async function exportCsv() {
       <section v-if="isCamera" class="card">
         <div class="chart-head">
           <h2>{{ t('device_detail.live_view') }}</h2>
-          <button class="live-toggle" :class="{ active: liveRequested }" @click="toggleLive">
-            {{ liveRequested ? t('device_detail.stop_live') : t('device_detail.go_live') }}
-          </button>
+          <div class="camera-actions">
+            <button v-if="isPlantCam" class="live-toggle" :disabled="analyseState === 'sent'" @click="analyseNow">
+              {{ t('device_detail.analyse_now') }}
+            </button>
+            <button class="live-toggle" :class="{ active: liveRequested }" @click="toggleLive">
+              {{ liveRequested ? t('device_detail.stop_live') : t('device_detail.go_live') }}
+            </button>
+          </div>
         </div>
+        <p v-if="analyseState" class="analyse-note" role="status">{{ t(`device_detail.analyse_${analyseState}`) }}</p>
         <img v-if="liveRequested && streamUrl" :src="streamUrl" :alt="t('device_detail.photo_alt')" class="live-stream" />
         <p v-else-if="liveRequested" class="muted">{{ t('dashboard.live_pending') }}</p>
         <p v-else class="muted">{{ t('device_detail.live_view_hint') }}</p>
@@ -309,6 +337,9 @@ async function exportCsv() {
   border: 1px solid var(--canopy-2); background: var(--surface); color: var(--canopy-2);
   padding: 0.35rem 0.85rem; border-radius: 999px; font-size: 0.8rem; cursor: pointer; font-weight: 650;
 }
+.camera-actions { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+.live-toggle:disabled { opacity: 0.6; cursor: default; }
+.analyse-note { font-size: 0.85rem; color: var(--ink-2); margin: 0 0 0.75rem; }
 .live-toggle.active { background: var(--canopy); color: var(--ink-inverse); }
 .export-btn {
   margin-top: 0.85rem; border: 1px solid var(--line-strong); background: var(--surface); color: var(--ink-2);

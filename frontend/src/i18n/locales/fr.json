@@ -58,7 +58,10 @@
     "live_view": "Vue en direct",
     "go_live": "Passer en direct",
     "stop_live": "Arrêter le direct",
-    "live_view_hint": "Passez en direct pour un aperçu en temps réel, ou laissez tel quel et VERT continuera de prendre ses photos périodiques habituelles."
+    "live_view_hint": "Passez en direct pour un aperçu en temps réel, ou laissez tel quel et VERT continuera de prendre ses photos périodiques habituelles.",
+    "analyse_now": "Analyser maintenant",
+    "analyse_sent": "Demandé. La caméra analyse dans quelques secondes ; cette page se met à jour dans 20 s.",
+    "analyse_failed": "Impossible de joindre la caméra. Vérifiez qu'elle est en ligne et réessayez."
   },
   "readings": {
     "temp_c": "Température (°C)",

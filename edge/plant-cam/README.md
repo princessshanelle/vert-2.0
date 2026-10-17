@@ -72,6 +72,30 @@ If the Pi also hosts the Docker stack (as here), use `broker.host: 127.0.0.1`
 and `gateway.url: http://127.0.0.1:8080`; the live-view address announced
 to the dashboard is still the LAN IP.
 
+## Test it without plants
+
+You can check the whole chain (camera, model, broker, dashboard, alerts) before the camera
+is in the greenhouse:
+
+1. **Dashboard**: from a phone or laptop on the same network, open `http://<pi-ip>:5173`. On the
+   Overview, open the camera's page (click its health dial or its name).
+2. **Live view**: press **Go live**. The picture comes straight from the Pi (`http://<pi-ip>:81/stream`),
+   so it works only on the same network. It switches itself off after 5 minutes with nobody watching.
+3. **Model**: show the camera a full-screen photo of a strawberry leaf with leaf scorch on a laptop or
+   tablet (search "strawberry leaf scorch", or browse the PlantifyDr dataset on Kaggle). Hold it 20-30 cm
+   away so the leaf fills the frame, in a lit room, without glare. Press **Analyse now** three times, about
+   a minute apart: a finding needs `persistence.activate_after` (3) sightings in a row. The camera page then
+   shows "Leaf scorch, Suspected" and the Overview briefing lists it. Then show a healthy leaf: it clears
+   after 2 analyses. On the Pi:
+   `journalctl -u plant-cam -f -o cat | grep '"msg": "analysis"'` shows `"active": ["leaf_scorch"]`.
+4. **Alerts**: in Automation, add a rule on the camera's device: metric `cond_leaf_scorch_active` `>` `0`
+   for 0 minutes, with action device = the camera and command `start_stream`. When step 3 makes the
+   finding active, an alert appears and the live view switches on.
+
+A photo on a screen looks like the model's training data (single leaves, plain background). This test
+proves that everything is wired up correctly. It does not measure accuracy on real plants; that needs
+labelled photos from your greenhouse (`training/README.md`).
+
 ## Configuration
 
 [config.example.yaml](config.example.yaml) documents every setting. One

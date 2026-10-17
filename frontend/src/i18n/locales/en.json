@@ -58,7 +58,10 @@
     "live_view": "Live view",
     "go_live": "Go live",
     "stop_live": "Stop live view",
-    "live_view_hint": "Go live for a real-time look, or leave it be and VERT will keep taking its usual periodic photos."
+    "live_view_hint": "Go live for a real-time look, or leave it be and VERT will keep taking its usual periodic photos.",
+    "analyse_now": "Analyse now",
+    "analyse_sent": "Requested. The camera analyses within a few seconds, and this page refreshes in 20 s.",
+    "analyse_failed": "Couldn't reach the camera. Check that it's online and try again."
   },
   "readings": {
     "temp_c": "Temperature (°C)",
