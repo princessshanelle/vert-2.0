@@ -24,6 +24,19 @@ export const useAuthStore = defineStore('auth', {
       })
       this._persist(data)
     },
+    // Both return a fresh token: the server ends every other session on a
+    // password change, and the token carries the email.
+    async changePassword(currentPassword, newPassword) {
+      const { data } = await client.put('/api/v1/me/password', {
+        current_password: currentPassword,
+        new_password: newPassword
+      })
+      this._persist(data)
+    },
+    async changeEmail(email, currentPassword) {
+      const { data } = await client.put('/api/v1/me/email', { email, current_password: currentPassword })
+      this._persist(data)
+    },
     logout() {
       this.token = null
       this.user = null

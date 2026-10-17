@@ -111,7 +111,7 @@ function formatDate(iso) {
 .new-reminder input, .new-reminder select { padding: 0.55rem; border: 1px solid var(--line-strong); border-radius: 8px; }
 .field-row { display: flex; gap: 0.5rem; flex-wrap: wrap; }
 .field-row input[type="datetime-local"] { flex: 1; min-width: 180px; }
-button { padding: 0.55rem 1rem; background: var(--vert-green); color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; }
+button { padding: 0.55rem 1rem; background: var(--canopy); color: var(--ink-inverse); border: none; border-radius: 8px; cursor: pointer; font-weight: 600; }
 button.link { background: none; color: var(--critical); padding: 0.2rem 0.4rem; font-weight: 500; flex-shrink: 0; }
 .error { color: var(--critical); margin: 0; }
 .empty-state { text-align: center; padding: 3rem 1rem; background: var(--surface); border-radius: 12px; color: var(--ink-2); }

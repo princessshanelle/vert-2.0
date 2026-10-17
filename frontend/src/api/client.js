@@ -7,6 +7,18 @@ function createClient(baseURL) {
     if (token) config.headers.Authorization = `Bearer ${token}`
     return config
   })
+  // A 401 on a signed-in request means the session was ended on the server
+  // (password changed elsewhere, access removed, token expired): sign out
+  // here too instead of leaving every page quietly failing.
+  instance.interceptors.response.use(undefined, (error) => {
+    const sentToken = error.config?.headers?.Authorization
+    if (error.response?.status === 401 && sentToken && !error.config.url?.includes('/auth/')) {
+      localStorage.removeItem('vert.token')
+      localStorage.removeItem('vert.user')
+      if (window.location.pathname !== '/login') window.location.assign('/login?ended=1')
+    }
+    return Promise.reject(error)
+  })
   return instance
 }
 

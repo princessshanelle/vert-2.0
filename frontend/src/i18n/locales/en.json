@@ -17,7 +17,8 @@
     "register_cta": "Create account",
     "switch_to_register": "Need an account? Sign up",
     "switch_to_login": "Already have an account? Log in",
-    "invalid_credentials": "Invalid email or password"
+    "invalid_credentials": "Invalid email or password",
+    "session_ended": "You've been signed out: your password was changed or your access was updated. Log in again."
   },
   "dashboard": {
     "title": "Your greenhouse",
@@ -160,7 +161,21 @@
     "appearance_hint": "Follow your device, or pick light or dark.",
     "theme_auto": "Automatic",
     "theme_light": "Light",
-    "theme_dark": "Dark"
+    "theme_dark": "Dark",
+    "change_password": "Change password",
+    "change_password_hint": "You'll stay signed in here; every other phone or computer using this account is signed out.",
+    "current_password": "Current password",
+    "new_password": "New password (at least 8 characters)",
+    "confirm_password": "New password again",
+    "password_changed": "Password changed. Other devices have been signed out.",
+    "password_too_short": "The new password needs at least 8 characters.",
+    "password_mismatch": "The two new passwords don't match.",
+    "wrong_password": "Your current password isn't correct.",
+    "email_taken": "Another account already uses that email.",
+    "change_failed": "That didn't work. Check your connection and try again.",
+    "change_email": "Change email",
+    "new_email": "New email",
+    "email_changed": "Email changed. Log in with {email} from now on."
   },
   "roles": {
     "admin": "Admin",
@@ -180,7 +195,8 @@
     "main": "Main",
     "analytics": "Analytics",
     "unread": "unread",
-    "more": "More"
+    "more": "More",
+    "users": "Users"
   },
   "health": {
     "dial_aria": "Plant health {pct} out of 100: {label}",
@@ -340,5 +356,27 @@
     "caveat": "Findings are what the camera suspects, not a diagnosis. Check the plants before treating.",
     "env_line": "Zone air: {temp} °C, {rh}% humidity, dew point {dew} °C",
     "models": "Analysed by: {list}"
+  },
+  "users": {
+    "title": "Users",
+    "subtitle": "Who can use this greenhouse, and what they can do.",
+    "add": "Add person",
+    "temp_password": "Temporary password",
+    "temp_password_hint": "Give them this password yourself. They can change it in Settings after logging in.",
+    "failed": "That didn't work. Try again.",
+    "added": "{name} can now log in as {email}.",
+    "role_changed": "{name} is now {role}.",
+    "removed": "{name} no longer has access and has been signed out.",
+    "restored": "{name} has access again.",
+    "reset": "Reset password",
+    "reset_done": "{name}'s password was reset and they were signed out. Give them the new one.",
+    "reset_hint": "They'll be signed out everywhere and need this password to log back in.",
+    "new_temp_password": "New temporary password for {name}",
+    "remove": "Remove access",
+    "restore": "Restore access",
+    "you": "You",
+    "no_access": "No access",
+    "since": "Added {date}",
+    "roles_help": "Admin: everything, including devices and users. Operator: runs the greenhouse (commands, automation). Viewer: can look, can't change anything."
   }
 }

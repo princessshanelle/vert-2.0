@@ -37,6 +37,9 @@ func main() {
 		log.Fatalf("connect postgres: %v", err)
 	}
 	defer db.Close()
+	if err := db.EnsureSchema(context.Background()); err != nil {
+		log.Fatalf("upgrade postgres schema: %v", err)
+	}
 
 	eng := engine.New(db, nil) // publisher is attached once runMessaging connects
 

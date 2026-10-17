@@ -9,6 +9,11 @@ create table users (
     display_name text not null,
     locale text not null default 'en',
     role text not null default 'operator', -- 'admin' | 'operator' | 'viewer'
+    -- Bumped to end every session (password change/reset, access removed);
+    -- session tokens carry it as "tv". Existing databases get these two
+    -- columns from the gateway at startup (store.EnsureSchema).
+    token_version int not null default 0,
+    disabled boolean not null default false, -- access removed by an admin (reversible)
     created_at timestamptz not null default now()
 );
 

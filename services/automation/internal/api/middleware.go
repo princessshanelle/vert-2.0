@@ -2,10 +2,13 @@ package api
 
 import (
 	"context"
+	"errors"
 	"net/http"
 	"strings"
 
 	"github.com/golang-jwt/jwt/v5"
+
+	"github.com/vert-project/automation/internal/store"
 )
 
 // Claims mirrors services/gateway/internal/api/middleware.go's Claims
@@ -13,17 +16,39 @@ import (
 // so a token from the gateway's /auth/login is also valid here. This is
 // what lets one login cover both services without a shared session store.
 type Claims struct {
-	UserID string `json:"uid"`
-	Email  string `json:"email"`
-	Role   string `json:"role"`
+	UserID       string `json:"uid"`
+	Email        string `json:"email"`
+	Role         string `json:"role"`
+	TokenVersion int    `json:"tv"`
 	jwt.RegisteredClaims
 }
+
+// SessionUsers looks the token's account up on every request (see the
+// gateway's checkSession): *store.DB satisfies it.
+type SessionUsers interface {
+	SessionUser(ctx context.Context, id string) (*store.SessionUser, error)
+}
+
+func checkSession(ctx context.Context, users SessionUsers, claims *Claims) error {
+	u, err := users.SessionUser(ctx, claims.UserID)
+	if err != nil {
+		return err
+	}
+	if u.Disabled || u.TokenVersion != claims.TokenVersion {
+		return errSessionEnded
+	}
+	claims.Role = u.Role
+	claims.Email = u.Email
+	return nil
+}
+
+var errSessionEnded = errors.New("session ended")
 
 type contextKey string
 
 const claimsKey contextKey = "claims"
 
-func RequireAuth(secret string) func(http.Handler) http.Handler {
+func RequireAuth(secret string, users SessionUsers) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			header := r.Header.Get("Authorization")
@@ -39,6 +64,10 @@ func RequireAuth(secret string) func(http.Handler) http.Handler {
 			})
 			if err != nil || !token.Valid {
 				writeError(w, http.StatusUnauthorized, "invalid or expired token")
+				return
+			}
+			if err := checkSession(r.Context(), users, claims); err != nil {
+				writeError(w, http.StatusUnauthorized, "your session has ended -- please log in again")
 				return
 			}
 

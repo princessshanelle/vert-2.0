@@ -17,7 +17,8 @@
     "register_cta": "Créer un compte",
     "switch_to_register": "Besoin d'un compte ? Inscrivez-vous",
     "switch_to_login": "Déjà un compte ? Connectez-vous",
-    "invalid_credentials": "E-mail ou mot de passe invalide"
+    "invalid_credentials": "E-mail ou mot de passe invalide",
+    "session_ended": "Vous avez été déconnecté : votre mot de passe a changé ou votre accès a été modifié. Reconnectez-vous."
   },
   "dashboard": {
     "title": "Votre serre",
@@ -160,7 +161,21 @@
     "appearance_hint": "Suivre l'appareil, ou choisir clair ou sombre.",
     "theme_auto": "Automatique",
     "theme_light": "Clair",
-    "theme_dark": "Sombre"
+    "theme_dark": "Sombre",
+    "change_password": "Changer le mot de passe",
+    "change_password_hint": "Vous restez connecté ici ; tous les autres appareils utilisant ce compte sont déconnectés.",
+    "current_password": "Mot de passe actuel",
+    "new_password": "Nouveau mot de passe (8 caractères minimum)",
+    "confirm_password": "Nouveau mot de passe, encore",
+    "password_changed": "Mot de passe changé. Les autres appareils ont été déconnectés.",
+    "password_too_short": "Le nouveau mot de passe doit faire au moins 8 caractères.",
+    "password_mismatch": "Les deux nouveaux mots de passe ne correspondent pas.",
+    "wrong_password": "Votre mot de passe actuel n'est pas correct.",
+    "email_taken": "Un autre compte utilise déjà cet e-mail.",
+    "change_failed": "Cela n'a pas fonctionné. Vérifiez la connexion et réessayez.",
+    "change_email": "Changer l'e-mail",
+    "new_email": "Nouvel e-mail",
+    "email_changed": "E-mail changé. Connectez-vous désormais avec {email}."
   },
   "roles": {
     "admin": "Administrateur",
@@ -180,7 +195,8 @@
     "main": "Principal",
     "analytics": "Analyses",
     "unread": "non lues",
-    "more": "Plus"
+    "more": "Plus",
+    "users": "Utilisateurs"
   },
   "health": {
     "dial_aria": "Santé des plantes {pct} sur 100 : {label}",
@@ -340,5 +356,27 @@
     "caveat": "Ce sont des soupçons de la caméra, pas un diagnostic. Vérifiez les plantes avant de traiter.",
     "env_line": "Air de la zone : {temp} °C, {rh} % d'humidité, point de rosée {dew} °C",
     "models": "Analysé par : {list}"
+  },
+  "users": {
+    "title": "Utilisateurs",
+    "subtitle": "Qui peut utiliser cette serre, et ce que chacun peut faire.",
+    "add": "Ajouter une personne",
+    "temp_password": "Mot de passe temporaire",
+    "temp_password_hint": "Donnez-lui ce mot de passe vous-même. Il pourra le changer dans Paramètres après connexion.",
+    "failed": "Cela n'a pas fonctionné. Réessayez.",
+    "added": "{name} peut maintenant se connecter avec {email}.",
+    "role_changed": "{name} est maintenant {role}.",
+    "removed": "{name} n'a plus accès et a été déconnecté.",
+    "restored": "{name} a de nouveau accès.",
+    "reset": "Réinitialiser le mot de passe",
+    "reset_done": "Le mot de passe de {name} a été réinitialisé et la personne déconnectée. Donnez-lui le nouveau.",
+    "reset_hint": "La personne sera déconnectée partout et aura besoin de ce mot de passe pour revenir.",
+    "new_temp_password": "Nouveau mot de passe temporaire pour {name}",
+    "remove": "Retirer l'accès",
+    "restore": "Rétablir l'accès",
+    "you": "Vous",
+    "no_access": "Sans accès",
+    "since": "Ajouté le {date}",
+    "roles_help": "Admin : tout, y compris appareils et utilisateurs. Opérateur : fait tourner la serre (commandes, automatisation). Observateur : peut regarder, ne peut rien changer."
   }
 }

@@ -21,7 +21,7 @@ func NewRouter(db *store.DB, eng *engine.Engine, cfg config.Config) http.Handler
 	alertsH := &AlertsHandler{DB: db}
 
 	r.Route("/api/v1/rules", func(r chi.Router) {
-		r.Use(RequireAuth(cfg.JWTSecret))
+		r.Use(RequireAuth(cfg.JWTSecret, db))
 		r.Get("/", rulesH.List)
 
 		r.Group(func(r chi.Router) {
@@ -33,7 +33,7 @@ func NewRouter(db *store.DB, eng *engine.Engine, cfg config.Config) http.Handler
 	})
 
 	r.Route("/api/v1/alerts", func(r chi.Router) {
-		r.Use(RequireAuth(cfg.JWTSecret))
+		r.Use(RequireAuth(cfg.JWTSecret, db))
 		r.Get("/", alertsH.List)
 		r.Post("/{id}/acknowledge", alertsH.Acknowledge)
 	})

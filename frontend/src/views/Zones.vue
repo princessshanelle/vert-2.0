@@ -74,7 +74,7 @@ async function createZone() {
 .subtitle { color: var(--ink-2); margin-top: 0.25rem; }
 .new-zone { display: flex; gap: 0.5rem; margin-bottom: 1rem; }
 .new-zone input { flex: 1; padding: 0.6rem; border: 1px solid var(--line-strong); border-radius: 8px; }
-.new-zone button { padding: 0.6rem 1.1rem; background: var(--vert-green); color: white; border: none; border-radius: 8px; cursor: pointer; }
+.new-zone button { padding: 0.6rem 1.1rem; background: var(--canopy); color: var(--ink-inverse); border: none; border-radius: 8px; cursor: pointer; }
 .zone-list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 0.5rem; }
 .zone-list li { display: flex; justify-content: space-between; background: var(--surface); padding: 0.85rem 1rem; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
 .zone-name { font-weight: 600; }
@@ -82,5 +82,5 @@ async function createZone() {
 .empty { color: var(--ink-2); }
 .error { color: var(--critical); margin-bottom: 0.75rem; }
 .hint { margin-top: 1.25rem; font-size: 0.85rem; }
-.hint a { color: var(--vert-green); }
+.hint a { color: var(--canopy); }
 </style>

@@ -45,6 +45,9 @@ func main() {
 		log.Fatalf("connect postgres: %v", err)
 	}
 	defer db.Close()
+	if err := db.EnsureSchema(context.Background()); err != nil {
+		log.Fatalf("upgrade postgres schema: %v", err)
+	}
 
 	tsdb, err := connectWithRetry("timescaledb", 15, 2*time.Second, func() (*timeseries.DB, error) {
 		return timeseries.Connect(context.Background(), cfg.TSDBURL)

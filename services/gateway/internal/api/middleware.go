@@ -2,24 +2,55 @@ package api
 
 import (
 	"context"
+	"errors"
 	"net/http"
 	"strings"
 
 	"github.com/golang-jwt/jwt/v5"
+
+	"github.com/vert-project/gateway/internal/store"
 )
 
 type Claims struct {
 	UserID string `json:"uid"`
 	Email  string `json:"email"`
 	Role   string `json:"role"`
+	// TokenVersion must match the user's token_version; tokens issued before
+	// it existed carry none, which reads as 0 -- the column's default.
+	TokenVersion int `json:"tv"`
 	jwt.RegisteredClaims
 }
+
+// SessionUsers looks a session's user up on every request, so a password
+// change, a role change or removed access takes effect at once instead of
+// when the 30-day token expires. *store.DB satisfies it.
+type SessionUsers interface {
+	GetUserByID(ctx context.Context, id string) (*store.User, error)
+}
+
+// checkSession confirms the account behind a verified token still exists,
+// is enabled and hasn't had its sessions ended, then refreshes the claims'
+// role and email from the database.
+func checkSession(ctx context.Context, users SessionUsers, claims *Claims) error {
+	u, err := users.GetUserByID(ctx, claims.UserID)
+	if err != nil {
+		return err
+	}
+	if u.Disabled || u.TokenVersion != claims.TokenVersion {
+		return errSessionEnded
+	}
+	claims.Role = u.Role
+	claims.Email = u.Email
+	return nil
+}
+
+var errSessionEnded = errors.New("session ended")
 
 type contextKey string
 
 const claimsKey contextKey = "claims"
 
-func RequireAuth(secret string) func(http.Handler) http.Handler {
+func RequireAuth(secret string, users SessionUsers) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			header := r.Header.Get("Authorization")
@@ -32,6 +63,10 @@ func RequireAuth(secret string) func(http.Handler) http.Handler {
 			claims, err := parseToken(secret, raw)
 			if err != nil {
 				writeError(w, http.StatusUnauthorized, "invalid or expired token")
+				return
+			}
+			if err := checkSession(r.Context(), users, claims); err != nil {
+				writeError(w, http.StatusUnauthorized, "your session has ended -- please log in again")
 				return
 			}
 

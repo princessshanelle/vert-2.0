@@ -17,7 +17,8 @@
     "register_cta": "Open account",
     "switch_to_register": "You no get account? Sign up",
     "switch_to_login": "You don get account? Log in",
-    "invalid_credentials": "Email or password no correct"
+    "invalid_credentials": "Email or password no correct",
+    "session_ended": "We don log you out: dem change your password or your access. Log in again."
   },
   "dashboard": {
     "title": "Your greenhouse",
@@ -160,7 +161,21 @@
     "appearance_hint": "Follow your phone, or pick light or dark.",
     "theme_auto": "Automatic",
     "theme_light": "Light",
-    "theme_dark": "Dark"
+    "theme_dark": "Dark",
+    "change_password": "Change password",
+    "change_password_hint": "You go still dey inside here; every other phone or computer wey dey use dis account go comot.",
+    "current_password": "Your password now",
+    "new_password": "New password (at least 8 letters)",
+    "confirm_password": "Type di new password again",
+    "password_changed": "Password don change. Other devices don comot.",
+    "password_too_short": "Di new password need at least 8 letters.",
+    "password_mismatch": "Di two new passwords no match.",
+    "wrong_password": "Your password now no correct.",
+    "email_taken": "Another account don already use dat email.",
+    "change_failed": "E no work. Check your network and try again.",
+    "change_email": "Change email",
+    "new_email": "New email",
+    "email_changed": "Email don change. From now, log in with {email}."
   },
   "roles": {
     "admin": "Admin",
@@ -180,7 +195,8 @@
     "main": "Main",
     "analytics": "Analytics",
     "unread": "never read",
-    "more": "More"
+    "more": "More",
+    "users": "Users"
   },
   "health": {
     "dial_aria": "Plant health {pct} over 100: {label}",
@@ -340,5 +356,27 @@
     "caveat": "Na wetin di camera suspect, no be diagnosis. Check di plants before you treat.",
     "env_line": "Zone air: {temp} °C, {rh}% humidity, dew point {dew} °C",
     "models": "Na dis one analyse am: {list}"
+  },
+  "users": {
+    "title": "Users",
+    "subtitle": "Who fit use dis greenhouse, and wetin each person fit do.",
+    "add": "Add person",
+    "temp_password": "Temporary password",
+    "temp_password_hint": "Give dem dis password yourself. Dem fit change am for Settings after dem log in.",
+    "failed": "E no work. Try again.",
+    "added": "{name} fit log in now as {email}.",
+    "role_changed": "{name} don be {role} now.",
+    "removed": "{name} no get access again, and dem don comot.",
+    "restored": "{name} get access again.",
+    "reset": "Reset password",
+    "reset_done": "We don reset {name} password and log dem out. Give dem di new one.",
+    "reset_hint": "Dem go comot everywhere and need dis password to enter back.",
+    "new_temp_password": "New temporary password for {name}",
+    "remove": "Remove access",
+    "restore": "Give access back",
+    "you": "You",
+    "no_access": "No access",
+    "since": "Added {date}",
+    "roles_help": "Admin: everything, plus devices and users. Operator: dey run di greenhouse (commands, automation). Viewer: fit look, no fit change anything."
   }
 }

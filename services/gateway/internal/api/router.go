@@ -37,7 +37,8 @@ func NewRouter(db *store.DB, tsdb *timeseries.DB, objects *storage.ObjectStore, 
 	readingsH := &ReadingsHandler{TS: tsdb}
 	commandH := &CommandHandler{DB: db, Commander: commander}
 	rmqAuthH := &RabbitMQAuthHandler{DB: db, Zones: db}
-	wsH := &WSHandler{Hub: hub, JWTSecret: cfg.JWTSecret}
+	wsH := &WSHandler{Hub: hub, JWTSecret: cfg.JWTSecret, Users: db}
+	usersH := &UsersHandler{DB: db}
 
 	r.Route("/api/v1", func(r chi.Router) {
 		r.Post("/auth/register", authH.Register)
@@ -57,8 +58,10 @@ func NewRouter(db *store.DB, tsdb *timeseries.DB, objects *storage.ObjectStore, 
 		})
 
 		r.Group(func(r chi.Router) {
-			r.Use(RequireAuth(cfg.JWTSecret))
+			r.Use(RequireAuth(cfg.JWTSecret, db))
 			r.Get("/me", authH.Me)
+			r.Put("/me/password", authH.ChangePassword)
+			r.Put("/me/email", authH.ChangeEmail)
 			r.Get("/devices", deviceH.List)
 			r.Get("/devices/{deviceID}", deviceH.Get)
 			r.Get("/devices/{deviceID}/frames", frameH.ListForDevice)
@@ -90,6 +93,12 @@ func NewRouter(db *store.DB, tsdb *timeseries.DB, objects *storage.ObjectStore, 
 				r.Post("/devices/provision", provisionH.Provision)
 				r.Post("/zones", zoneH.Create)
 				r.Put("/devices/{deviceID}/zone", zoneH.AssignDevice)
+
+				// Accounts: who can use this greenhouse, and as what.
+				r.Get("/users", usersH.List)
+				r.Post("/users", usersH.Create)
+				r.Patch("/users/{userID}", usersH.Update)
+				r.Put("/users/{userID}/password", usersH.ResetPassword)
 			})
 		})
 	})

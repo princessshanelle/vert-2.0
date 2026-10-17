@@ -203,3 +203,9 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .visually-hidden {
   position: absolute !important; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap;
 }
+
+/* Form fields follow the theme (browsers default them to white). */
+input, select, textarea {
+  background: var(--surface); color: var(--ink); border: 1px solid var(--line-strong); border-radius: var(--radius-s);
+}
+input::placeholder, textarea::placeholder { color: var(--ink-3); }

@@ -94,8 +94,8 @@ function startAnother() {
 .provision-form label { display: flex; flex-direction: column; gap: 0.3rem; font-size: 0.9rem; }
 .provision-form input, .provision-form select { padding: 0.55rem; border: 1px solid var(--line-strong); border-radius: 8px; }
 .provision-form small { color: var(--ink-3); font-weight: 400; }
-button { padding: 0.6rem 1rem; background: var(--vert-green); color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; }
-button.secondary { background: transparent; color: var(--vert-green); border: 1px solid var(--vert-green); margin-top: 1rem; }
+button { padding: 0.6rem 1rem; background: var(--canopy); color: var(--ink-inverse); border: none; border-radius: 8px; cursor: pointer; font-weight: 600; }
+button.secondary { background: transparent; color: var(--canopy); border: 1px solid var(--canopy); margin-top: 1rem; }
 .error { color: var(--critical); margin: 0; }
 .secret-card { background: var(--surface); padding: 1.5rem; border-radius: 12px; box-shadow: var(--shadow); border: 1px solid var(--line); border: 2px solid #f6c945; }
 .secret-card h2 { margin-top: 0; font-size: 1.05rem; }

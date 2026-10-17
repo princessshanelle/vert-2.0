@@ -33,7 +33,10 @@ const nav = computed(() => [
   { to: '/rules', key: 'rules', icon: 'M4 6h10M18 6h2M4 12h4M12 12h8M4 18h12M20 18h0M14 4v4M8 10v4M16 16v4' },
   { to: '/zones', key: 'zones', icon: 'M3 7l9-4 9 4-9 4-9-4zM3 12l9 4 9-4M3 17l9 4 9-4' },
   { to: '/reminders', key: 'reminders', icon: 'M8 3v3M16 3v3M4 8h16M5 5h14a1 1 0 0 1 1 1v14H4V6a1 1 0 0 1 1-1zM9 14l2 2 4-4' },
-  ...(isAdmin.value ? [{ to: '/provision', key: 'provision', icon: 'M12 5v14M5 12h14' }] : [])
+  ...(isAdmin.value ? [
+    { to: '/provision', key: 'provision', icon: 'M12 5v14M5 12h14' },
+    { to: '/users', key: 'users', icon: 'M16 20v-1a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v1M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM22 20v-1a4 4 0 0 0-3-3.9M16 3.1a4 4 0 0 1 0 7.8' }
+  ] : [])
 ])
 </script>
 

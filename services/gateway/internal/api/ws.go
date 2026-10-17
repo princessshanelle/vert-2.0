@@ -9,6 +9,7 @@ import (
 type WSHandler struct {
 	Hub       *ws.Hub
 	JWTSecret string
+	Users     SessionUsers
 }
 
 // Readings upgrades to a WebSocket that streams every telemetry update
@@ -23,8 +24,13 @@ func (h *WSHandler) Readings(w http.ResponseWriter, r *http.Request) {
 		writeError(w, http.StatusUnauthorized, "missing token")
 		return
 	}
-	if _, err := parseToken(h.JWTSecret, token); err != nil {
+	claims, err := parseToken(h.JWTSecret, token)
+	if err != nil {
 		writeError(w, http.StatusUnauthorized, "invalid or expired token")
+		return
+	}
+	if err := checkSession(r.Context(), h.Users, claims); err != nil {
+		writeError(w, http.StatusUnauthorized, "your session has ended -- please log in again")
 		return
 	}
 	h.Hub.Serve(w, r)

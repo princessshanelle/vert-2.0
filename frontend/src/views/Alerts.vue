@@ -57,7 +57,7 @@ function formatDate(iso) {
 .alert-body { display: flex; flex-direction: column; gap: 0.2rem; }
 .message { margin: 0; }
 .meta { font-size: 0.75rem; color: var(--ink-3); }
-button { padding: 0.4rem 0.9rem; background: var(--vert-green); color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 0.85rem; flex-shrink: 0; }
+button { padding: 0.4rem 0.9rem; background: var(--canopy); color: var(--ink-inverse); border: none; border-radius: 8px; cursor: pointer; font-size: 0.85rem; flex-shrink: 0; }
 .seen { font-size: 0.8rem; color: var(--ink-3); flex-shrink: 0; }
 .error { color: var(--critical); }
 </style>

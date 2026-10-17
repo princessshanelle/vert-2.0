@@ -208,9 +208,9 @@ label { display: flex; flex-direction: column; gap: 0.3rem; font-size: 0.85rem; 
 input, select { padding: 0.5rem; border: 1px solid var(--line-strong); border-radius: 8px; }
 .section-label { font-size: 0.8rem; font-weight: 600; color: var(--canopy); margin: 0.25rem 0 0; }
 .form-actions { display: flex; gap: 0.6rem; }
-button { padding: 0.55rem 1rem; background: var(--vert-green); color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; }
+button { padding: 0.55rem 1rem; background: var(--canopy); color: var(--ink-inverse); border: none; border-radius: 8px; cursor: pointer; font-weight: 600; }
 button.secondary { background: transparent; color: var(--ink-2); border: 1px solid var(--line-strong); }
-button.link { background: none; color: var(--vert-green); padding: 0.2rem 0.4rem; font-weight: 500; }
+button.link { background: none; color: var(--canopy); padding: 0.2rem 0.4rem; font-weight: 500; }
 button.link.danger { color: var(--critical); }
 .error { color: var(--critical); margin: 0; }
 .empty { color: var(--ink-2); }
